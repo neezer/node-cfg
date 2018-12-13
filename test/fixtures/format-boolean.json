@@ -1,0 +1,7 @@
+{
+  "bool": {
+    "desc": "A boolean test.",
+    "env": "BOOL",
+    "format": "boolean"
+  }
+}

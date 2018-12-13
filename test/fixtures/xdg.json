@@ -1,0 +1,15 @@
+{
+  "$appName": "__test--my-test-app",
+  "port": {
+    "desc": "A port test.",
+    "env": "PORT",
+    "format": "port"
+  },
+  "nested": {
+    "key": {
+      "desc": "A nested key",
+      "env": "NESTED",
+      "format": "string"
+    }
+  }
+}

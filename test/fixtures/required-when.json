@@ -1,0 +1,15 @@
+{
+  "tls": {
+    "use": {
+      "env": "USE_TLS",
+      "desc": "Whether or not to enable TLS",
+      "format": "boolean"
+    },
+    "certPath": {
+      "requiredWhen": "tls.use",
+      "env": "TLS_CERT_PATH",
+      "desc": "Location to the TLS Cert",
+      "format": "filepath"
+    }
+  }
+}

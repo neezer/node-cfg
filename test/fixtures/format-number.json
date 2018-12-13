@@ -1,0 +1,7 @@
+{
+  "num": {
+    "desc": "A number test.",
+    "env": "NUM",
+    "format": "number"
+  }
+}
