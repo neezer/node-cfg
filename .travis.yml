@@ -9,6 +9,8 @@ jobs:
   include:
     - stage: test
       script: npm test
+    - stage: commitlint
+      script: npx @commitlint/travis-cli
     - stage: release
       if: branch = master
       node_js: lts/*
