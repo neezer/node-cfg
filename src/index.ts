@@ -24,22 +24,21 @@ export function cfg<T = any>(
   givenSchemaMap?: SchemaMap,
   typeCheck: TypeCheck<T> = identity
 ): Result<T> {
-  let schemaMap: SchemaMap = {};
+  const configJsonPath = path.join(process.cwd(), "config.json");
+  let schemaMap: SchemaMap | undefined = {};
 
   if (givenSchemaMap === undefined) {
-    try {
-      const schemaPath = path.join(process.cwd(), "config.json");
-      const rawSchema = fs.readFileSync(schemaPath, { encoding: "utf-8" });
-      const parsedSchema = JSON.parse(rawSchema);
+    schemaMap = loadConfigFromPackage();
 
-      if (schemaMapCheck(parsedSchema)) {
-        schemaMap = parsedSchema;
-      }
-    } catch (error) {
-      throw new Error("cannot read config.json");
+    if (fs.existsSync(configJsonPath)) {
+      schemaMap = loadConfigJson(schemaMap || {});
     }
   } else {
     schemaMap = givenSchemaMap;
+  }
+
+  if (schemaMap === undefined) {
+    throw new Error("schema is unknown");
   }
 
   dotenv.config();
@@ -72,6 +71,34 @@ function buildEnvMap(schemaMap: SchemaMap, paths: string[]): Config {
 
     return { ...memo, [p]: value };
   }, {});
+}
+
+function loadConfigJson(existingSchemaMap: SchemaMap): SchemaMap | undefined {
+  try {
+    const schemaPath = path.join(process.cwd(), "config.json");
+    const rawSchema = fs.readFileSync(schemaPath, { encoding: "utf-8" });
+    const parsedSchema = JSON.parse(rawSchema);
+
+    if (schemaMapCheck(parsedSchema)) {
+      return extend(true, existingSchemaMap, parsedSchema);
+    }
+  } catch (error) {
+    throw new Error("cannot read config.json");
+  }
+}
+
+function loadConfigFromPackage(): SchemaMap | undefined {
+  const packageJsonRaw = fs.readFileSync(
+    path.join(process.cwd(), "package.json"),
+    { encoding: "utf-8" }
+  );
+
+  const packageJson = JSON.parse(packageJsonRaw);
+  const config = packageJson.config;
+
+  if (schemaMapCheck(config.cfg)) {
+    return config.cfg;
+  }
 }
 
 // https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html
@@ -111,4 +138,38 @@ function buildXDGConfigMap(schemaMap: SchemaMap, paths: string[]): Config {
   }
 
   return {};
+}
+
+// http://gomakethings.com/merging-objects-with-vanilla-javascript/
+// NOTE: original script had lots of typos; fixed here
+function extend(...args: any[]) {
+  const extended: Record<string, any> = {};
+
+  let deep = false;
+  let i = 0;
+
+  if (typeof args[0] === "boolean") {
+    deep = args[0];
+    i++;
+  }
+
+  const merge = (obj: any) => {
+    for (const prop in obj) {
+      if (obj.hasOwnProperty(prop)) {
+        const shouldRecurse =
+          deep &&
+          Object.prototype.toString.call(obj[prop]) === "[object Object]";
+
+        extended[prop] = shouldRecurse
+          ? extend(true, extended[prop], obj[prop])
+          : obj[prop];
+      }
+    }
+  };
+
+  for (; i < args.length; i++) {
+    merge(args[i]);
+  }
+
+  return extended;
 }
