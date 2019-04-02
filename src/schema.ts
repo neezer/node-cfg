@@ -7,6 +7,7 @@ export interface ISchema {
   optional?: boolean;
   format: Format;
   requiredWhen?: string;
+  caseInsensitive?: boolean;
   [key: string]: string | boolean | Format | undefined;
 }
 

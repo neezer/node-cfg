@@ -61,6 +61,20 @@ test("format array asserts inclusion", (t: Test) => {
   });
 });
 
+test("format array asserts inclusion, case insensitive", (t: Test) => {
+  withEnv({ NODE_ENV: "TEST" }, () => {
+    const [errors, config] = cfg(passingSimple);
+
+    if (errors === null) {
+      t.equal(config.env, "test", "env === test");
+    } else {
+      t.fail("expected success");
+    }
+
+    t.end();
+  });
+});
+
 test("simple config errors", (t: Test) => {
   withEnv({ NODE_ENV: undefined }, () => {
     const [errors, _] = cfg(passingSimple);

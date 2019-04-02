@@ -11,7 +11,7 @@ export function validate(
   value: any,
   schema: ISchema
 ): [DefinitelyErrors, CoercedValue] {
-  const { format, optional, requiredWhen } = schema;
+  const { format, optional, requiredWhen, caseInsensitive } = schema;
   const errors: DefinitelyErrors = [];
 
   let foreignRequirementTrue = true;
@@ -36,7 +36,7 @@ export function validate(
   }
 
   if (isRequired && Array.isArray(format)) {
-    [err, val] = assert.in(keyPath, value, format);
+    [err, val] = assert.in(keyPath, value, format, caseInsensitive);
   } else {
     switch (format) {
       case "boolean":
