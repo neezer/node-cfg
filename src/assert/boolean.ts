@@ -1,14 +1,20 @@
 import { Assert } from ".";
 
 export const assert: Assert = (keyPath, value) => {
+  const valueAsString = String(value);
+
   if (value === true || value === false) {
     return [null, value];
-  } else if (value === "true" || value === "t" || value === "1") {
+  } else if (
+    valueAsString === "true" ||
+    valueAsString === "t" ||
+    valueAsString === "1"
+  ) {
     return [null, true];
   } else if (
-    value === "false" ||
-    value === "f" ||
-    value === "0" ||
+    valueAsString === "false" ||
+    valueAsString === "f" ||
+    valueAsString === "0" ||
     value === undefined
   ) {
     return [null, false];
