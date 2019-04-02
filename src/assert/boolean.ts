@@ -1,7 +1,7 @@
 import { Assert } from ".";
 
 export const assert: Assert = (keyPath, value) => {
-  const valueAsString = String(value);
+  const valueAsString = String(value).toLowerCase();
 
   if (value === true || value === false) {
     return [null, value];
