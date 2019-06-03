@@ -20,21 +20,26 @@ const identity = (v: any) => v;
 const schemaMapCheck = (s: any): s is SchemaMap =>
   !!s && typeof s === "object" && !Array.isArray(s);
 
-export function cfg<T = any>(
-  givenSchemaMap?: SchemaMap,
-  typeCheck: TypeCheck<T> = identity
-): Result<T> {
+interface IArgs<T> {
+  check?: TypeCheck<T>;
+  schema?: SchemaMap;
+}
+
+export function cfg<T = any>({
+  check = identity,
+  schema
+}: IArgs<T>): Result<T> {
   const configJsonPath = path.join(process.cwd(), "config.json");
   let schemaMap: SchemaMap | undefined = {};
 
-  if (givenSchemaMap === undefined) {
+  if (schema === undefined) {
     schemaMap = loadConfigFromPackage();
 
     if (fs.existsSync(configJsonPath)) {
       schemaMap = loadConfigJson(schemaMap || {});
     }
   } else {
-    schemaMap = givenSchemaMap;
+    schemaMap = schema;
   }
 
   if (schemaMap === undefined) {
@@ -61,7 +66,7 @@ export function cfg<T = any>(
 
   const [errors, config] = paths.reduce(reducer, [[], {}]);
 
-  return [errors.length === 0 ? null : errors, typeCheck(config)];
+  return [errors.length === 0 ? null : errors, check(config)];
 }
 
 function buildEnvMap(schemaMap: SchemaMap, paths: string[]): Config {

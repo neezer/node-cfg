@@ -31,7 +31,10 @@ test("simple config loads environment", (t: Test) => {
       }
     };
 
-    const [errors, config] = cfg<IConfig>(passingSimple, assertType);
+    const [errors, config] = cfg<IConfig>({
+      check: assertType,
+      schema: passingSimple
+    });
 
     t.deepEqual(errors, null, "errors is null");
     t.ok(config.hasOwnProperty("env"), "config has env key");
@@ -41,7 +44,7 @@ test("simple config loads environment", (t: Test) => {
 
 test("format array asserts inclusion", (t: Test) => {
   withEnv({ NODE_ENV: "bananas" }, () => {
-    const [errors, _] = cfg(passingSimple);
+    const [errors, _] = cfg({ schema: passingSimple });
 
     if (errors === null) {
       t.fail("must return error");
@@ -63,7 +66,7 @@ test("format array asserts inclusion", (t: Test) => {
 
 test("format array asserts inclusion, case insensitive", (t: Test) => {
   withEnv({ NODE_ENV: "TEST" }, () => {
-    const [errors, config] = cfg(passingSimple);
+    const [errors, config] = cfg({ schema: passingSimple });
 
     if (errors === null) {
       t.equal(config.env, "test", "env === test");
@@ -77,7 +80,7 @@ test("format array asserts inclusion, case insensitive", (t: Test) => {
 
 test("simple config errors", (t: Test) => {
   withEnv({ NODE_ENV: undefined }, () => {
-    const [errors, _] = cfg(passingSimple);
+    const [errors, _] = cfg({ schema: passingSimple });
 
     if (errors === null) {
       t.fail("must return errors");
@@ -98,7 +101,7 @@ test("simple config errors", (t: Test) => {
 
 test("optional simple config does not error for optional properties", (t: Test) => {
   withEnv({ NODE_ENV: undefined }, () => {
-    const [errors, config] = cfg(optionalSimple);
+    const [errors, config] = cfg({ schema: optionalSimple });
 
     if (errors !== null) {
       t.fail(JSON.stringify(errors));
@@ -112,7 +115,7 @@ test("optional simple config does not error for optional properties", (t: Test) 
 
 test("handles deep config", (t: Test) => {
   withEnv({ NODE_ENV: "test", LOG_LEVEL: "warn" }, () => {
-    const [errors, config] = cfg(deep);
+    const [errors, config] = cfg({ schema: deep });
 
     if (errors !== null) {
       t.fail("must not return errors");
@@ -131,7 +134,7 @@ test("handles deep config", (t: Test) => {
 
 test("format boolean", (t: Test) => {
   const isTrue = () => {
-    const [errors, config] = cfg(formatBoolean);
+    const [errors, config] = cfg({ schema: formatBoolean });
 
     if (errors !== null) {
       t.fail(JSON.stringify(errors));
@@ -141,7 +144,7 @@ test("format boolean", (t: Test) => {
   };
 
   const isFalse = () => {
-    const [errors, config] = cfg(formatBoolean);
+    const [errors, config] = cfg({ schema: formatBoolean });
 
     if (errors !== null) {
       t.fail(JSON.stringify(errors));
@@ -163,7 +166,7 @@ test("format boolean", (t: Test) => {
 
 test("requiredWhen are required when other property is truthy", (t: Test) => {
   withEnv({ USE_TLS: "true", TLS_CERT_PATH: "/tmp/cert" }, () => {
-    const [errors, config] = cfg(requiredWhen);
+    const [errors, config] = cfg({ schema: requiredWhen });
 
     if (errors !== null) {
       t.fail(JSON.stringify(errors));
@@ -177,7 +180,7 @@ test("requiredWhen are required when other property is truthy", (t: Test) => {
   });
 
   withEnv({ USE_TLS: "true" }, () => {
-    const [errors, _] = cfg(requiredWhen);
+    const [errors, _] = cfg({ schema: requiredWhen });
 
     if (errors === null) {
       t.fail("should have errors");
@@ -192,7 +195,7 @@ test("requiredWhen are required when other property is truthy", (t: Test) => {
   });
 
   withEnv({}, () => {
-    const [errors, config] = cfg(requiredWhen);
+    const [errors, config] = cfg({ schema: requiredWhen });
 
     if (errors !== null) {
       t.fail(JSON.stringify(errors));
@@ -210,7 +213,7 @@ test("requiredWhen are required when other property is truthy", (t: Test) => {
 
 test("format number", (t: Test) => {
   withEnv({ NUM: "42" }, () => {
-    const [errors, config] = cfg(formatNumber);
+    const [errors, config] = cfg({ schema: formatNumber });
 
     if (errors !== null) {
       t.fail(JSON.stringify(errors));
@@ -220,7 +223,7 @@ test("format number", (t: Test) => {
   });
 
   withEnv({ NUM: "fourty-two" }, () => {
-    const [errors] = cfg(formatNumber);
+    const [errors] = cfg({ schema: formatNumber });
 
     if (errors === null) {
       t.fail("no errors");
@@ -238,7 +241,7 @@ test("format number", (t: Test) => {
 
 test("format port", (t: Test) => {
   withEnv({ PORT: "80" }, () => {
-    const [errors, config] = cfg(formatPort);
+    const [errors, config] = cfg({ schema: formatPort });
 
     if (errors !== null) {
       t.fail(JSON.stringify(errors));
@@ -248,7 +251,7 @@ test("format port", (t: Test) => {
   });
 
   withEnv({ PORT: "4.5" }, () => {
-    const [errors] = cfg(formatPort);
+    const [errors] = cfg({ schema: formatPort });
 
     if (errors === null) {
       t.fail("no errors");
@@ -275,7 +278,7 @@ key = "testing"
     fs.ensureFileSync(pathToFile);
     fs.writeFileSync(pathToFile, tomlConf, { encoding: "utf-8" });
 
-    const [errors, config] = cfg(xdg);
+    const [errors, config] = cfg({ schema: xdg });
 
     if (errors !== null) {
       t.fail(JSON.stringify(errors));
@@ -294,7 +297,7 @@ key = "testing"
     fs.ensureFileSync(pathToFile);
     fs.writeFileSync(pathToFile, tomlConf, { encoding: "utf-8" });
 
-    const [errors, config] = cfg(xdg);
+    const [errors, config] = cfg({ schema: xdg });
 
     if (errors !== null) {
       t.fail(JSON.stringify(errors));

@@ -36,15 +36,33 @@ interface MyConfig {
 }
 
 // use a typeguard to definitely type your config
-const assertType = (value: any): value is MyConfig => {
+const guard = (value: any): value is MyConfig => {
   return !!value && "aValue" in value;
+};
+
+// create an assertion function using the typeguard
+const assert = (v: any) => {
+  if (guard(v)) {
+    return v;
+  } else {
+    throw new Error("not a valid configuration!");
+  }
 };
 
 // given `process.env.A_VALUE === 'whatever'`
 
-const config = cfg<MyConfig>(undefined, assertType);
+const config = cfg<MyConfig>({ check: assert });
 
 config.aValue === "whatever";
+```
+
+## Migrating from 1.x.x to 2.x.x
+
+The arguments provided to `cfg` are now an object:
+
+```diff
+- cfg(givenSchemaMap, assertType)
++ cfg({ schema: givenSchemaMap, check: assertType })
 ```
 
 ## TODO
