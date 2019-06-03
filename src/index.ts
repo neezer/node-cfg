@@ -27,19 +27,19 @@ interface IArgs<T> {
 
 export function cfg<T = any>({
   check = identity,
-  schema
+  schema: givenSchema
 }: IArgs<T>): Result<T> {
   const configJsonPath = path.join(process.cwd(), "config.json");
   let schemaMap: SchemaMap | undefined = {};
 
-  if (schema === undefined) {
+  if (givenSchema === undefined) {
     schemaMap = loadConfigFromPackage();
 
     if (fs.existsSync(configJsonPath)) {
       schemaMap = loadConfigJson(schemaMap || {});
     }
   } else {
-    schemaMap = schema;
+    schemaMap = givenSchema;
   }
 
   if (schemaMap === undefined) {
