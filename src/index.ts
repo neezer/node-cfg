@@ -96,7 +96,7 @@ function loadConfigFromPackage(): SchemaMap | undefined {
   const packageJson = JSON.parse(packageJsonRaw);
   const config = packageJson.config;
 
-  if (schemaMapCheck(config.cfg)) {
+  if (!!config && schemaMapCheck(config.cfg)) {
     return config.cfg;
   }
 }
