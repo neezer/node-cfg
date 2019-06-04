@@ -7,19 +7,20 @@ import { load as loadFromConfig } from "./load/config-json";
 import { load as loadFromPackage } from "./load/package-json";
 import { ISchema } from "./schema";
 import { validate } from "./validate";
-import { DefinitelyErrors, RawConfig, SchemaMap } from "./values";
+import { Errors, RawConfig, SchemaMap } from "./values";
 
-type Errors = DefinitelyErrors | null;
-type IntermediateResult = [DefinitelyErrors, RawConfig];
-type Result<T> = [Errors, T];
+type IntermediateResult = [Errors, RawConfig];
 type Reducer = (memo: IntermediateResult, p: string) => IntermediateResult;
 
-interface IArgs {
+interface IProps {
   schema?: SchemaMap;
+  onError?: (errors: Errors) => void;
 }
 
-export function cfg<T>({ schema: givenSchema }: IArgs = {}): Result<T> {
+export function cfg<T = RawConfig>(props: IProps = {}): T {
+  const { schema: givenSchema, onError = defaultErrorHandler } = props;
   const configJsonPath = path.join(process.cwd(), "config.json");
+
   let schemaMap: SchemaMap | undefined = {};
 
   if (givenSchema === undefined) {
@@ -56,7 +57,11 @@ export function cfg<T>({ schema: givenSchema }: IArgs = {}): Result<T> {
 
   const [errors, config] = paths.reduce(reducer, [[], {}]);
 
-  return [errors.length === 0 ? null : errors, config as T];
+  if (errors.length > 0) {
+    onError(errors);
+  }
+
+  return config as T;
 }
 
 function buildEnvMap(schemaMap: SchemaMap, paths: string[]): RawConfig {
@@ -105,4 +110,11 @@ function buildXDGConfigMap(schemaMap: SchemaMap, paths: string[]): RawConfig {
   }
 
   return {};
+}
+
+function defaultErrorHandler(errors: Errors) {
+  errors.forEach(error => {
+    process.stderr.write(`config error: ${error}\n`);
+    process.exit(1);
+  });
 }

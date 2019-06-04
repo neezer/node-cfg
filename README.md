@@ -34,12 +34,23 @@ missed some key functionality I was after:
 import { cfg } from "@neezer/cfg";
 
 // dynamically generated on NPM/yarn install
+// if using in a JS project, you can skip this import
 import { Config } from "@neezer/cfg/dist/config";
 
-const [errors, config] = cfg<Config>();
+const config = cfg<Config>();
 
 config.aValue === "whatever";
 ```
+
+### A note about errors
+
+By default, `cfg` will log configuration errors to `stderr` and will exit the
+process with `process.exit(1)`. You can configure this behavior using the
+`onError` configuration option.
+
+However, be advised that if you do not properly handle errors, the resulting
+config object may be in a bad state. I like failing hard when this happens to
+prevent more cryptic errors, which is why the default is so aggressive.
 
 ## Migrating from 2.x.x to 3.x.x
 
@@ -80,6 +91,11 @@ application should know about your schema without a bunch of work on your part.
 
 If anyone knows of a better way to implement this, I'm all :ear:s.
 
+### Configure error handling with `onError`
+
+The return from `cfg` now only returns the config object, not the errors.
+Configure error handling using the `onError` configuration option.
+
 ## Migrating from 1.x.x to 2.x.x
 
 The arguments provided to `cfg` are now an object:
@@ -88,7 +104,3 @@ The arguments provided to `cfg` are now an object:
 - cfg(givenSchemaMap, assertType)
 + cfg({ schema: givenSchemaMap, check: assertType })
 ```
-
-## TODO
-
-Write more here

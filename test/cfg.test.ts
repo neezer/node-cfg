@@ -14,128 +14,132 @@ import { withEnv } from "./helper";
 
 test("simple config loads environment", (t: Test) => {
   withEnv({ NODE_ENV: "test" }, () => {
-    const [errors, config] = cfg({ schema: passingSimple });
+    const config = cfg({
+      onError: errors => t.fail(errors.join("\n")),
+      schema: passingSimple
+    });
 
-    t.deepEqual(errors, null, "errors is null");
-
-    if (config !== null) {
-      t.ok(config.hasOwnProperty("env"), "config has env key");
-      t.equal(config.env, "test", "value is correct");
-    }
-
-    t.end();
+    t.ok(config.hasOwnProperty("env"), "config has env key");
+    t.equal(config.env, "test", "value is correct");
   });
+
+  t.end();
 });
 
 test("format array asserts inclusion", (t: Test) => {
+  let errored = false;
+
   withEnv({ NODE_ENV: "bananas" }, () => {
-    const [errors, _] = cfg({ schema: passingSimple });
+    cfg({
+      onError: errors => {
+        errored = true;
 
-    if (errors === null) {
-      t.fail("must return error");
-    } else {
-      t.equal(errors.length, 1, "has one error");
+        t.equal(errors.length, 1, "has one error");
 
-      const error = errors[0];
+        const error = errors[0];
 
-      t.equal(
-        error,
-        'env => "bananas" is not in "development,production,test"',
-        "message is correct"
-      );
-    }
+        t.equal(
+          error,
+          'env => "bananas" is not in "development,production,test"',
+          "message is correct"
+        );
+      },
+      schema: passingSimple
+    });
 
-    t.end();
+    t.equals(errored, true, "should have failed");
   });
+
+  t.end();
 });
 
 test("format array asserts inclusion, case insensitive", (t: Test) => {
   withEnv({ NODE_ENV: "TEST" }, () => {
-    const [errors, config] = cfg({ schema: passingSimple });
+    const config = cfg({
+      onError: errors => t.fail(errors.join("\n")),
+      schema: passingSimple
+    });
 
-    if (errors === null) {
-      t.equal(config.env, "test", "env === test");
-    } else {
-      t.fail("expected success");
-    }
-
-    t.end();
+    t.equal(config.env, "test", "env === test");
   });
+
+  t.end();
 });
 
 test("simple config errors", (t: Test) => {
+  let errored = false;
+
   withEnv({ NODE_ENV: undefined }, () => {
-    const [errors, _] = cfg({ schema: passingSimple });
+    cfg({
+      onError: errors => {
+        errored = true;
 
-    if (errors === null) {
-      t.fail("must return errors");
-    } else {
-      t.equal(errors.length, 1, "has one error");
+        t.equal(errors.length, 1, "has one error");
 
-      const error = errors[0];
+        const error = errors[0];
 
-      t.equal(
-        error,
-        'env => "undefined" is not in "development,production,test"'
-      );
-    }
+        t.equal(
+          error,
+          'env => "undefined" is not in "development,production,test"'
+        );
+      },
+      schema: passingSimple
+    });
 
-    t.end();
+    t.equals(errored, true, "should have failed");
   });
+
+  t.end();
 });
 
 test("optional simple config does not error for optional properties", (t: Test) => {
   withEnv({ NODE_ENV: undefined }, () => {
-    const [errors, config] = cfg({ schema: optionalSimple });
+    const config = cfg({
+      onError: errors => t.fail(errors.join(" ")),
+      schema: optionalSimple
+    });
 
-    if (errors !== null) {
-      t.fail(JSON.stringify(errors));
-    } else {
-      t.deepEqual(config, { env: undefined }, "value is undefined");
-    }
-
-    t.end();
+    t.deepEqual(config, { env: undefined }, "value is undefined");
   });
+
+  t.end();
 });
 
 test("handles deep config", (t: Test) => {
   withEnv({ NODE_ENV: "test", LOG_LEVEL: "warn" }, () => {
-    const [errors, config] = cfg({ schema: deep });
+    const config = cfg({
+      onError: errors => t.fail(errors.join(" ")),
+      schema: deep
+    });
 
-    if (errors !== null) {
-      t.fail("must not return errors");
-    } else {
-      t.ok(config.hasOwnProperty("one"), "has one key");
-      t.ok(config.one.hasOwnProperty("logLevel"), "one has log level");
-      t.ok(config.one.hasOwnProperty("two"), "one has two");
-      t.ok(config.one.two.hasOwnProperty("three"), "one.two has three");
-      t.deepEqual(config.one.logLevel, "warn", "log level is correct");
-      t.deepEqual(config.one.two.three, "test", "env is correct");
-    }
-
-    t.end();
+    t.ok(config.hasOwnProperty("one"), "has one key");
+    t.ok(config.one.hasOwnProperty("logLevel"), "one has log level");
+    t.ok(config.one.hasOwnProperty("two"), "one has two");
+    t.ok(config.one.two.hasOwnProperty("three"), "one.two has three");
+    t.deepEqual(config.one.logLevel, "warn", "log level is correct");
+    t.deepEqual(config.one.two.three, "test", "env is correct");
   });
+
+  t.end();
 });
 
 test("format boolean", (t: Test) => {
   const isTrue = () => {
-    const [errors, config] = cfg({ schema: formatBoolean });
+    const config = cfg({
+      onError: errors => t.fail(errors.join(" ")),
+      schema: formatBoolean
+    });
 
-    if (errors !== null) {
-      t.fail(JSON.stringify(errors));
-    } else {
-      t.equal(config.bool, true, "bool is true");
-    }
+    t.equal(config.bool, true, "bool is true");
   };
 
   const isFalse = () => {
-    const [errors, config] = cfg({ schema: formatBoolean });
+    const config = cfg({
+      onError: errors => t.fail(errors.join(" ")),
+      schema: formatBoolean
+    });
 
-    if (errors !== null) {
-      t.fail(JSON.stringify(errors));
-    } else {
-      t.equal(config.bool, false, "bool is false");
-    }
+    t.equal(config.bool, false, "bool is false");
   };
 
   withEnv({ BOOL: "true" }, isTrue);
@@ -151,46 +155,49 @@ test("format boolean", (t: Test) => {
 
 test("requiredWhen are required when other property is truthy", (t: Test) => {
   withEnv({ USE_TLS: "true", TLS_CERT_PATH: "/tmp/cert" }, () => {
-    const [errors, config] = cfg({ schema: requiredWhen });
+    const config = cfg({
+      onError: errors => t.fail(errors.join(" ")),
+      schema: requiredWhen
+    });
 
-    if (errors !== null) {
-      t.fail(JSON.stringify(errors));
-    } else {
-      t.ok(config.hasOwnProperty("tls"), "has tls property");
-      t.ok(config.tls.hasOwnProperty("use"), "tls.use exists");
-      t.ok(config.tls.hasOwnProperty("certPath"), "tls.certPath exists");
-      t.equal(config.tls.use, true, "use tls is true");
-      t.equal(config.tls.certPath, "/tmp/cert", "tls.certPath is correct");
-    }
+    t.ok(config.hasOwnProperty("tls"), "has tls property");
+    t.ok(config.tls.hasOwnProperty("use"), "tls.use exists");
+    t.ok(config.tls.hasOwnProperty("certPath"), "tls.certPath exists");
+    t.equal(config.tls.use, true, "use tls is true");
+    t.equal(config.tls.certPath, "/tmp/cert", "tls.certPath is correct");
   });
 
   withEnv({ USE_TLS: "true" }, () => {
-    const [errors, _] = cfg({ schema: requiredWhen });
+    let errored = false;
 
-    if (errors === null) {
-      t.fail("should have errors");
-    } else {
-      t.equal(errors.length, 1, "has one error");
-      t.equal(
-        errors[0],
-        'value at "tls.certPath" cannot be undefined',
-        "message is correct"
-      );
-    }
+    cfg({
+      onError: errors => {
+        errored = true;
+
+        t.equal(errors.length, 1, "has one error");
+        t.equal(
+          errors[0],
+          'value at "tls.certPath" cannot be undefined',
+          "message is correct"
+        );
+      },
+      schema: requiredWhen
+    });
+
+    t.equal(errored, true, "should have errors");
   });
 
   withEnv({}, () => {
-    const [errors, config] = cfg({ schema: requiredWhen });
+    const config = cfg({
+      onError: errors => t.fail(errors.join(" ")),
+      schema: requiredWhen
+    });
 
-    if (errors !== null) {
-      t.fail(JSON.stringify(errors));
-    } else {
-      t.ok(config.hasOwnProperty("tls"), "has tls property");
-      t.ok(config.tls.hasOwnProperty("use"), "tls.use exists");
-      t.ok(config.tls.hasOwnProperty("certPath"), "tls.certPath exists");
-      t.equal(config.tls.use, false, "use tls is false");
-      t.equal(config.tls.certPath, undefined, "tls.certPath is correct");
-    }
+    t.ok(config.hasOwnProperty("tls"), "has tls property");
+    t.ok(config.tls.hasOwnProperty("use"), "tls.use exists");
+    t.ok(config.tls.hasOwnProperty("certPath"), "tls.certPath exists");
+    t.equal(config.tls.use, false, "use tls is false");
+    t.equal(config.tls.certPath, undefined, "tls.certPath is correct");
   });
 
   t.end();
@@ -198,27 +205,31 @@ test("requiredWhen are required when other property is truthy", (t: Test) => {
 
 test("format number", (t: Test) => {
   withEnv({ NUM: "42" }, () => {
-    const [errors, config] = cfg({ schema: formatNumber });
+    const config = cfg({
+      onError: errors => t.fail(errors.join(" ")),
+      schema: formatNumber
+    });
 
-    if (errors !== null) {
-      t.fail(JSON.stringify(errors));
-    } else {
-      t.equal(config.num, 42, "num is a number");
-    }
+    t.equal(config.num, 42, "num is a number");
   });
 
   withEnv({ NUM: "fourty-two" }, () => {
-    const [errors] = cfg({ schema: formatNumber });
+    let errored = false;
 
-    if (errors === null) {
-      t.fail("no errors");
-    } else {
-      t.equal(
-        errors[0],
-        '"num" cannot be cast to a number',
-        "number is invalid"
-      );
-    }
+    cfg({
+      onError: errors => {
+        errored = true;
+
+        t.equal(
+          errors[0],
+          '"num" cannot be cast to a number',
+          "number is invalid"
+        );
+      },
+      schema: formatNumber
+    });
+
+    t.equal(errored, true, "should have errored");
   });
 
   t.end();
@@ -226,23 +237,27 @@ test("format number", (t: Test) => {
 
 test("format port", (t: Test) => {
   withEnv({ PORT: "80" }, () => {
-    const [errors, config] = cfg({ schema: formatPort });
+    const config = cfg({
+      onError: errors => t.fail(errors.join(" ")),
+      schema: formatPort
+    });
 
-    if (errors !== null) {
-      t.fail(JSON.stringify(errors));
-    } else {
-      t.equal(config.port, 80, "port is valid");
-    }
+    t.equal(config.port, 80, "port is valid");
   });
 
   withEnv({ PORT: "4.5" }, () => {
-    const [errors] = cfg({ schema: formatPort });
+    let errored = false;
 
-    if (errors === null) {
-      t.fail("no errors");
-    } else {
-      t.equal(errors[0], '"port" is not a valid port', "port is invalid");
-    }
+    cfg({
+      onError: errors => {
+        errored = true;
+
+        t.equal(errors[0], '"port" is not a valid port', "port is invalid");
+      },
+      schema: formatPort
+    });
+
+    t.equal(errored, true, "should have errored");
   });
 
   t.end();
@@ -263,14 +278,13 @@ key = "testing"
     fs.ensureFileSync(pathToFile);
     fs.writeFileSync(pathToFile, tomlConf, { encoding: "utf-8" });
 
-    const [errors, config] = cfg({ schema: xdg });
+    const config = cfg({
+      onError: errors => t.fail(errors.join(" ")),
+      schema: xdg
+    });
 
-    if (errors !== null) {
-      t.fail(JSON.stringify(errors));
-    } else {
-      t.equal(config.port, 8888, "port is valid");
-      t.equal(config.nested.key, "testing", "nested key works");
-    }
+    t.equal(config.port, 8888, "port is valid");
+    t.equal(config.nested.key, "testing", "nested key works");
 
     fs.removeSync(path.join(HOME, ".config", xdg.$appName));
   });
@@ -282,13 +296,12 @@ key = "testing"
     fs.ensureFileSync(pathToFile);
     fs.writeFileSync(pathToFile, tomlConf, { encoding: "utf-8" });
 
-    const [errors, config] = cfg({ schema: xdg });
+    const config = cfg({
+      onError: errors => t.fail(errors.join(" ")),
+      schema: xdg
+    });
 
-    if (errors !== null) {
-      t.fail(JSON.stringify(errors));
-    } else {
-      t.equal(config.port, 8888, "port is valid");
-    }
+    t.equal(config.port, 8888, "port is valid");
 
     fs.removeSync(path.join(XDG_CONFIG_HOME, xdg.$appName));
   });
