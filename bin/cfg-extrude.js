@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 // TODO convert to TS and export to bin
+// TODO maybe do better error handling?
 
 const fs = require("fs");
 const path = require("path");
@@ -8,48 +9,53 @@ const distDir = path.join(__dirname, "../dist");
 const requireDist = p => require(path.join(distDir, p));
 const parentDir = process.argv[2];
 
-const { load: loadFromPackage } = requireDist("./load/package-json");
-const { load: loadFromConfig } = requireDist("./load/config-json");
-const schemaMap = loadFromConfig(parentDir, loadFromPackage(parentDir));
+try {
+  const { load: loadFromPackage } = requireDist("./load/package-json");
+  const { load: loadFromConfig } = requireDist("./load/config-json");
 
-const isCfgEntry = obj =>
-  !!obj && "desc" in obj && "env" in obj && "format" in obj;
+  const schemaMap = loadFromConfig(parentDir, loadFromPackage(parentDir));
 
-const getType = formatter => {
-  switch (formatter) {
-    case "number":
-    case "port":
-      return "number";
-    case "boolean":
-      return "boolean";
-    default:
-      if (Array.isArray(formatter)) {
-        return formatter.map(v => `"${v}"`).join(" | ");
+  const isCfgEntry = obj =>
+    !!obj && "desc" in obj && "env" in obj && "format" in obj;
+
+  const getType = formatter => {
+    switch (formatter) {
+      case "number":
+      case "port":
+        return "number";
+      case "boolean":
+        return "boolean";
+      default:
+        if (Array.isArray(formatter)) {
+          return formatter.map(v => `"${v}"`).join(" | ");
+        }
+
+        return "string";
+    }
+  };
+
+  const findEntries = (keys, coll) =>
+    keys.map(key => {
+      const value = coll[key];
+
+      if (key === "$appName") {
+        return undefined;
       }
 
-      return "string";
-  }
-};
+      if (isCfgEntry(value)) {
+        return `${key}: ${getType(value.format)};`;
+      }
 
-const findEntries = (keys, coll) =>
-  keys.map(key => {
-    const value = coll[key];
+      return `${key}: { ${findEntries(Object.keys(value), value)} };`;
+    });
 
-    if (key === "$appName") {
-      return undefined;
-    }
+  const entries = findEntries(Object.keys(schemaMap), schemaMap);
 
-    if (isCfgEntry(value)) {
-      return `${key}: ${getType(value.format)};`;
-    }
+  const Config = `export interface Config { ${entries
+    .filter(v => !!v)
+    .join(" ")} }`;
 
-    return `${key}: { ${findEntries(Object.keys(value), value)} };`;
-  });
-
-const entries = findEntries(Object.keys(schemaMap), schemaMap);
-
-const Config = `export interface Config { ${entries
-  .filter(v => !!v)
-  .join(" ")} }`;
-
-fs.writeFileSync(path.join(distDir, "config.d.ts"), Config);
+  fs.writeFileSync(path.join(distDir, "config.d.ts"), Config);
+} catch (error) {
+  // silently ignore error
+}
