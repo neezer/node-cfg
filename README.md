@@ -36,7 +36,7 @@ import { cfg } from "@neezer/cfg";
 // dynamically generated on NPM/yarn install
 import { Config } from "@neezer/cfg/dist/config";
 
-const config = cfg<Config>();
+const [errors, config] = cfg<Config>();
 
 config.aValue === "whatever";
 ```
