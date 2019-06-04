@@ -1,7 +1,7 @@
 import * as assert from "./assert";
 import * as keypaths from "./keypaths";
 import { ISchema } from "./schema";
-import { DefinitelyErrors, RawConfig } from "./values";
+import { Errors, RawConfig } from "./values";
 
 type CoercedValue = any;
 
@@ -10,9 +10,9 @@ export function validate(
   keyPath: string,
   value: any,
   schema: ISchema
-): [DefinitelyErrors, CoercedValue] {
+): [Errors, CoercedValue] {
   const { format, optional, requiredWhen, caseInsensitive } = schema;
-  const errors: DefinitelyErrors = [];
+  const errors: Errors = [];
 
   let foreignRequirementTrue = true;
   let err = null;
