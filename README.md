@@ -29,32 +29,56 @@ missed some key functionality I was after:
 ```
 
 ```ts
+/* given `process.env.A_VALUE === 'whatever'` */
+
 import { cfg } from "@neezer/cfg";
 
-interface MyConfig {
-  aValue: string;
-}
+// dynamically generated on NPM/yarn install
+import { Config } from "@neezer/cfg/dist/config";
 
-// use a typeguard to definitely type your config
-const guard = (value: any): value is MyConfig => {
-  return !!value && "aValue" in value;
-};
-
-// create an assertion function using the typeguard
-const assert = (v: any) => {
-  if (guard(v)) {
-    return v;
-  } else {
-    throw new Error("not a valid configuration!");
-  }
-};
-
-// given `process.env.A_VALUE === 'whatever'`
-
-const config = cfg<MyConfig>({ check: assert });
+const config = cfg<Config>();
 
 config.aValue === "whatever";
 ```
+
+## Migrating from 2.x.x to 3.x.x
+
+### Automagic Config Type Definition
+
+Previously you had to define a type to pass to `cfg`, along with a type guard
+function and an assert function.
+
+Now that all happens automatically at **package install time** via a
+`postinstall` hook. You don't have to pass in the type--`cfg` will still work
+fine without it--but you can get better type safety and better autocomplete
+functionality in your editor if you use it.
+
+If you need to regenerate the definition, you can manually invoke the script:
+
+```shell
+./node_modules/.bin/cfg-extrude
+```
+
+#### Why at package install time?
+
+TypeScript does not allow inference of rich JS objects at runtime. While you're
+authoring your application you haven't "ran" it yet, but the compile step for
+the library has already "run," so there's no opportunity to provide a richer
+type object in a dynamic fashion. This library cannot anticipate all possible
+user-generated configurations, which is why the previous API put that work on
+you--the consumer--to provide to the library.
+
+I always thought it sucked that the type guard and type definition was basically
+a copy of the config JSON this library consumes. Too much opportunity for the
+two to drift apart. I was also unhappy with the generic Record type of
+`Record<string, any>` since you couldn't write smarter types with that limited
+information and I really love my VSCode autocompletion.
+
+So this is the happy medium. The compile process for the lib knows nothing about
+your schema--and thus your config type--but the TypeScript compiler for your
+application should know about your schema without a bunch of work on your part.
+
+If anyone knows of a better way to implement this, I'm all :ear:s.
 
 ## Migrating from 1.x.x to 2.x.x
 

@@ -1,7 +1,7 @@
 import fs from "fs-extra";
 import path from "path";
 import test, { Test } from "tape";
-import { cfg } from "../src";
+import { cfg } from "../src/cfg";
 import deep from "./fixtures/deep.json";
 import formatBoolean from "./fixtures/format-boolean.json";
 import formatNumber from "./fixtures/format-number.json";
@@ -13,32 +13,17 @@ import xdg from "./fixtures/xdg.json";
 import { withEnv } from "./helper";
 
 test("simple config loads environment", (t: Test) => {
-  t.plan(3);
-
-  interface IConfig {
-    env: string;
-  }
-
   withEnv({ NODE_ENV: "test" }, () => {
-    const typeCheck = (v: any): v is IConfig =>
-      !!v && typeof v === "object" && "env" in v;
-
-    const assertType = (v: any) => {
-      if (typeCheck(v)) {
-        return v;
-      } else {
-        throw new Error("not a valid configuration!");
-      }
-    };
-
-    const [errors, config] = cfg<IConfig>({
-      check: assertType,
-      schema: passingSimple
-    });
+    const [errors, config] = cfg({ schema: passingSimple });
 
     t.deepEqual(errors, null, "errors is null");
-    t.ok(config.hasOwnProperty("env"), "config has env key");
-    t.equal(config.env, "test", "value is correct");
+
+    if (config !== null) {
+      t.ok(config.hasOwnProperty("env"), "config has env key");
+      t.equal(config.env, "test", "value is correct");
+    }
+
+    t.end();
   });
 });
 
@@ -310,9 +295,3 @@ key = "testing"
 
   t.end();
 });
-
-// /**
-//  * TODO
-//  *
-//  * - validate configuration descriptions!!!!!!!!!!!!!!!!!
-//  */

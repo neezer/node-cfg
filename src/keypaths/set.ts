@@ -1,8 +1,13 @@
-import { Config } from "..";
+import { RawConfig } from "../values";
 
-type Reducer = (memo: Config, key: string, i: number, coll: string[]) => Config;
+type Reducer = (
+  memo: RawConfig,
+  key: string,
+  i: number,
+  coll: string[]
+) => RawConfig;
 
-export function set(path: string, value: any, obj: Config) {
+export function set(path: string, value: any, obj: RawConfig) {
   const parts = path.split(".");
 
   const reducer: Reducer = (memo, key, i, coll) => {

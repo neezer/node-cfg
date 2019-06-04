@@ -1,12 +1,12 @@
-import { Config, DefinitelyErrors } from ".";
 import * as assert from "./assert";
 import * as keypaths from "./keypaths";
 import { ISchema } from "./schema";
+import { DefinitelyErrors, RawConfig } from "./values";
 
 type CoercedValue = any;
 
 export function validate(
-  config: Config,
+  config: RawConfig,
   keyPath: string,
   value: any,
   schema: ISchema

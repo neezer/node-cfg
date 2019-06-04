@@ -9,7 +9,11 @@
     "dotenv": "^6.2.0",
     "toml": "^2.3.3"
   },
+  "bin": {
+    "cfg-extrude": "./bin/cfg-extrude.js"
+  },
   "files": [
+    "bin",
     "dist",
     "package.json"
   ],
@@ -32,6 +36,8 @@
   "scripts": {
     "build": "yarn clean && tsc",
     "clean": "rimraf dist",
-    "test": "tape --require ts-node/register 'test/**/*.test.ts'"
+    "test": "tape --require ts-node/register 'test/**/*.test.ts'",
+    "prepublishOnly": "yarn build",
+    "postinstall": "bin/cfg-extrude.js $INIT_CWD"
   }
 }
