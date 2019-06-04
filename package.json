@@ -39,5 +39,10 @@
     "test": "tape --require ts-node/register 'test/**/*.test.ts'",
     "prepublishOnly": "yarn build",
     "postinstall": "bin/cfg-extrude.js $INIT_CWD"
+  },
+  "commitlint": {
+    "extends": [
+      "@commitlint/config-conventional"
+    ]
   }
 }
