@@ -1,0 +1,7 @@
+{
+  "url": {
+    "desc": "A url test.",
+    "env": "URL",
+    "format": "url"
+  }
+}

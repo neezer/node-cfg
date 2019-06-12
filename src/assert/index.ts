@@ -5,6 +5,7 @@ export { assert as in } from "./in";
 export { assert as number } from "./number";
 export { assert as port } from "./port";
 export { assert as present } from "./present";
+export { assert as url } from "./url";
 
 export type Assert = (
   keyPath: string,

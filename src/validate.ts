@@ -48,6 +48,9 @@ export function validate(
       case "number":
         [err, val] = assert.number(keyPath, value);
         break;
+      case "url":
+        [err, val] = assert.url(keyPath, value);
+        break;
       default:
         val = value;
     }

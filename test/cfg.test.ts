@@ -6,6 +6,7 @@ import deep from "./fixtures/deep.json";
 import formatBoolean from "./fixtures/format-boolean.json";
 import formatNumber from "./fixtures/format-number.json";
 import formatPort from "./fixtures/format-port.json";
+import formatUrl from "./fixtures/format-url.json";
 import optionalSimple from "./fixtures/optional-simple.json";
 import passingSimple from "./fixtures/passing-simple.json";
 import requiredWhen from "./fixtures/required-when.json";
@@ -227,6 +228,38 @@ test("format number", (t: Test) => {
         );
       },
       schema: formatNumber
+    });
+
+    t.equal(errored, true, "should have errored");
+  });
+
+  t.end();
+});
+
+test("format url", (t: Test) => {
+  const urlValue = "http://example.com:1234";
+  const expectedUrl = new URL(urlValue);
+
+  withEnv({ URL: urlValue }, () => {
+    const config = cfg({
+      onError: errors => t.fail(errors.join(" ")),
+      schema: formatUrl
+    });
+
+    t.ok(config.url instanceof URL, "url is a URL instance");
+    t.equal(config.url.port, expectedUrl.port, "port matches");
+  });
+
+  withEnv({ URL: "fourty-two" }, () => {
+    let errored = false;
+
+    cfg({
+      onError: errors => {
+        errored = true;
+
+        t.equal(errors[0], '"url" cannot be cast to a URL', "url is invalid");
+      },
+      schema: formatUrl
     });
 
     t.equal(errored, true, "should have errored");
