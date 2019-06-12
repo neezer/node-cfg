@@ -320,7 +320,7 @@ test("format path", (t: Test) => {
 
         t.equal(
           errors[0],
-          `no file present at ${failPath}`,
+          `for path, no file present at ${failPath}`,
           "path does not exist"
         );
       },
