@@ -18,21 +18,29 @@ try {
   const isCfgEntry = obj =>
     !!obj && "desc" in obj && "env" in obj && "format" in obj;
 
-  const getType = formatter => {
-    switch (formatter) {
+  const getType = value => {
+    const { optional, requiredWhen } = value;
+    const possiblyOptional = optional === true || requiredWhen !== undefined;
+    const retValue = type => (possiblyOptional ? `${type} | undefined` : type);
+
+    switch (value.format) {
       case "number":
       case "port":
-        return "number";
+        return retValue("number");
       case "boolean":
-        return "boolean";
+        return retValue("boolean");
       case "url":
-        return "URL";
+        return retValue("URL");
       default:
         if (Array.isArray(formatter)) {
+          if (possiblyOptional) {
+            return [...formatter, "undefined"].map(v => `"${v}"`).join(" | ");
+          }
+
           return formatter.map(v => `"${v}"`).join(" | ");
         }
 
-        return "string";
+        return retValue("string");
     }
   };
 
@@ -45,7 +53,7 @@ try {
       }
 
       if (isCfgEntry(value)) {
-        return `${key}: ${getType(value.format)};`;
+        return `${key}: ${getType(value)};`;
       }
 
       return `${key}: { ${findEntries(Object.keys(value), value).join(" ")} };`;

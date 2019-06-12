@@ -7,18 +7,23 @@ import { load as loadFromConfig } from "./load/config-json";
 import { load as loadFromPackage } from "./load/package-json";
 import { ISchema } from "./schema";
 import { validate } from "./validate";
-import { Errors, RawConfig, SchemaMap } from "./values";
+import { Errors, RawConfig, SchemaMap, Warnings } from "./values";
 
-type IntermediateResult = [Errors, RawConfig];
+type IntermediateResult = [Errors, Warnings, RawConfig];
 type Reducer = (memo: IntermediateResult, p: string) => IntermediateResult;
 
 interface IProps {
   schema?: SchemaMap;
   onError?: (errors: Errors) => void;
+  onWarning?: (warnings: Warnings) => void;
 }
 
 export function cfg<T = RawConfig>(props: IProps = {}): T {
-  const { schema: givenSchema, onError = defaultErrorHandler } = props;
+  const {
+    schema: givenSchema,
+    onError = defaultErrorHandler,
+    onWarning = defaultWarningHandler
+  } = props;
   const configJsonPath = path.join(process.cwd(), "config.json");
 
   let schemaMap: SchemaMap | undefined = {};
@@ -43,22 +48,31 @@ export function cfg<T = RawConfig>(props: IProps = {}): T {
   const xdgConfigMap = buildXDGConfigMap(schemaMap, paths);
   const envMap = buildEnvMap(schemaMap, paths);
 
-  const reducer: Reducer = ([errs, conf], p) => {
+  const reducer: Reducer = ([errs, warnings, conf], p) => {
     const configValue = xdgConfigMap[p];
     const envValue = envMap[p];
     const value = configValue === undefined ? envValue : configValue;
     const updated = keypaths.set(p, value, conf);
     const schema = keypaths.get(p, schemaMap) as ISchema;
-    const [newErrs, coercedValue] = validate(updated, p, value, schema);
+    const [newErrs, newWarnings, coercedValue] = validate(
+      updated,
+      p,
+      value,
+      schema
+    );
     const validated = keypaths.set(p, coercedValue, conf);
 
-    return [errs.concat(newErrs), validated];
+    return [errs.concat(newErrs), warnings.concat(newWarnings), validated];
   };
 
-  const [errors, config] = paths.reduce(reducer, [[], {}]);
+  const [errors, warnings, config] = paths.reduce(reducer, [[], [], {}]);
 
   if (errors.length > 0) {
     onError(errors);
+  }
+
+  if (warnings.length > 0) {
+    onWarning(warnings);
   }
 
   return config as T;
@@ -118,4 +132,10 @@ function defaultErrorHandler(errors: Errors) {
   });
 
   process.exit(1);
+}
+
+function defaultWarningHandler(warnings: Warnings) {
+  warnings.forEach(warning => {
+    process.stdout.write(`config warning: ${warning}\n`);
+  });
 }
