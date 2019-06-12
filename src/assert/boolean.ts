@@ -5,6 +5,8 @@ export const assert: Assert = (keyPath, value) => {
 
   if (value === true || value === false) {
     return [null, value];
+  } else if (value === undefined) {
+    return [`"${keyPath}" is unset`, false];
   } else if (
     valueAsString === "true" ||
     valueAsString === "t" ||
@@ -14,8 +16,7 @@ export const assert: Assert = (keyPath, value) => {
   } else if (
     valueAsString === "false" ||
     valueAsString === "f" ||
-    valueAsString === "0" ||
-    value === undefined
+    valueAsString === "0"
   ) {
     return [null, false];
   } else {

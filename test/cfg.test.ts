@@ -150,7 +150,6 @@ test("format boolean", (t: Test) => {
   withEnv({ BOOL: "false" }, isFalse);
   withEnv({ BOOL: "f" }, isFalse);
   withEnv({ BOOL: "0" }, isFalse);
-  withEnv({}, isFalse);
 
   t.end();
 });
@@ -189,7 +188,7 @@ test("requiredWhen are required when other property is truthy", (t: Test) => {
     t.equal(errored, true, "should have errors");
   });
 
-  withEnv({}, () => {
+  withEnv({ USE_TLS: "false" }, () => {
     const config = cfg({
       onError: errors => t.fail(errors.join(" ")),
       schema: requiredWhen
