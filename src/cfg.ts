@@ -115,6 +115,7 @@ function buildXDGConfigMap(schemaMap: SchemaMap, paths: string[]): RawConfig {
 function defaultErrorHandler(errors: Errors) {
   errors.forEach(error => {
     process.stderr.write(`config error: ${error}\n`);
-    process.exit(1);
   });
+
+  process.exit(1);
 }
