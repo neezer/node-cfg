@@ -5,6 +5,7 @@ import { cfg } from "../src/cfg";
 import deep from "./fixtures/deep.json";
 import formatBoolean from "./fixtures/format-boolean.json";
 import formatNumber from "./fixtures/format-number.json";
+import formatPath from "./fixtures/format-path.json";
 import formatPort from "./fixtures/format-port.json";
 import formatUrl from "./fixtures/format-url.json";
 import optionalSimple from "./fixtures/optional-simple.json";
@@ -288,6 +289,42 @@ test("format port", (t: Test) => {
         t.equal(errors[0], '"port" is not a valid port', "port is invalid");
       },
       schema: formatPort
+    });
+
+    t.equal(errored, true, "should have errored");
+  });
+
+  t.end();
+});
+
+test("format path", (t: Test) => {
+  const failPath = "/this/does/not/exist";
+
+  fs.ensureFileSync("/tmp/something");
+
+  withEnv({ PATHY: "/tmp/something" }, () => {
+    const config = cfg({
+      onError: errors => t.fail(errors.join(" ")),
+      schema: formatPath
+    });
+
+    t.equal(config.path, "/tmp/something", "path is valid");
+  });
+
+  withEnv({ PATHY: failPath }, () => {
+    let errored = false;
+
+    cfg({
+      onError: errors => {
+        errored = true;
+
+        t.equal(
+          errors[0],
+          `no file present at ${failPath}`,
+          "path does not exist"
+        );
+      },
+      schema: formatPath
     });
 
     t.equal(errored, true, "should have errored");

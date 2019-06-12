@@ -1,0 +1,7 @@
+{
+  "path": {
+    "desc": "A path test.",
+    "env": "PATHY",
+    "format": "path"
+  }
+}
