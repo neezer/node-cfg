@@ -46,7 +46,7 @@ try {
         return `${key}: ${getType(value.format)};`;
       }
 
-      return `${key}: { ${findEntries(Object.keys(value), value)} };`;
+      return `${key}: { ${findEntries(Object.keys(value), value).join(" ")} };`;
     });
 
   const entries = findEntries(Object.keys(schemaMap), schemaMap);
