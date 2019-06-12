@@ -46,7 +46,7 @@ export function cfg<T = RawConfig>(props: IProps = {}): T {
   const reducer: Reducer = ([errs, conf], p) => {
     const configValue = xdgConfigMap[p];
     const envValue = envMap[p];
-    const value = configValue || envValue;
+    const value = configValue === undefined ? envValue : configValue;
     const updated = keypaths.set(p, value, conf);
     const schema = keypaths.get(p, schemaMap) as ISchema;
     const [newErrs, coercedValue] = validate(updated, p, value, schema);

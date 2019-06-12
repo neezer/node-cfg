@@ -1,4 +1,5 @@
 {
+  "$appName": "testy-mc-testerson",
   "bool": {
     "desc": "A boolean test.",
     "env": "BOOL",

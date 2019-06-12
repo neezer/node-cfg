@@ -151,6 +151,34 @@ test("format boolean", (t: Test) => {
   withEnv({ BOOL: "f" }, isFalse);
   withEnv({ BOOL: "0" }, isFalse);
 
+  withEnv({ HOME: "/tmp/home" }, () => {
+    const tomlConf = `
+bool = false
+      `;
+
+    const HOME = process.env.HOME as string;
+    const pathToFile = path.join(
+      HOME,
+      ".config",
+      formatBoolean.$appName,
+      "env.toml"
+    );
+
+    fs.ensureFileSync(pathToFile);
+    fs.writeFileSync(pathToFile, tomlConf, { encoding: "utf-8" });
+
+    const config = cfg({
+      onError: errors => t.fail(errors.join(" ")),
+      schema: formatBoolean
+    });
+
+    t.equal(config.bool, false, "bool is false");
+
+    return () => {
+      fs.removeSync(path.join(HOME, ".config", xdg.$appName));
+    };
+  });
+
   t.end();
 });
 
@@ -355,7 +383,9 @@ key = "testing"
     t.equal(config.port, 8888, "port is valid");
     t.equal(config.nested.key, "testing", "nested key works");
 
-    fs.removeSync(path.join(HOME, ".config", xdg.$appName));
+    return () => {
+      fs.removeSync(path.join(HOME, ".config", xdg.$appName));
+    };
   });
 
   withEnv({ XDG_CONFIG_HOME: "/tmp/.config" }, () => {
@@ -372,7 +402,9 @@ key = "testing"
 
     t.equal(config.port, 8888, "port is valid");
 
-    fs.removeSync(path.join(XDG_CONFIG_HOME, xdg.$appName));
+    return () => {
+      fs.removeSync(path.join(XDG_CONFIG_HOME, ".config", xdg.$appName));
+    };
   });
 
   t.end();
