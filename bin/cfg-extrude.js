@@ -25,6 +25,8 @@ try {
         return "number";
       case "boolean":
         return "boolean";
+      case "url":
+        return "URL";
       default:
         if (Array.isArray(formatter)) {
           return formatter.map(v => `"${v}"`).join(" | ");
