@@ -5,7 +5,7 @@ import { SchemaMap, schemaMapCheck } from "../values";
 
 export function load(
   cwd = process.cwd(),
-  existingSchemaMap: SchemaMap = {}
+  existingSchemaMap?: SchemaMap
 ): SchemaMap | undefined {
   try {
     const schemaPath = path.join(cwd, "config.json");
@@ -13,9 +13,14 @@ export function load(
     const parsedSchema = JSON.parse(rawSchema);
 
     if (schemaMapCheck(parsedSchema)) {
-      return extend(true, existingSchemaMap, parsedSchema);
+      return extend(true, existingSchemaMap || {}, parsedSchema);
     }
   } catch (error) {
+    if (existingSchemaMap !== undefined) {
+      return existingSchemaMap
+    }
+
     throw new Error("cannot read config.json");
   }
 }
+
