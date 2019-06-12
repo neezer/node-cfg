@@ -53,6 +53,7 @@ export function validate(
         break;
       case "path":
         [err, val] = assert.path(keyPath, value);
+        break;
       default:
         val = value;
     }
