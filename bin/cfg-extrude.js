@@ -53,9 +53,9 @@ try {
 
   const entries = findEntries(Object.keys(schemaMap), schemaMap);
 
-  const Config = `export interface Config { ${entries
-    .filter(v => !!v)
-    .join(" ")} }`;
+  const Config = `/// <reference types="node" />
+
+export interface Config { ${entries.filter(v => !!v).join(" ")} }`;
 
   fs.writeFileSync(path.join(distDir, "config.d.ts"), Config);
 } catch (error) {
