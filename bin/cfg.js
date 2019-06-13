@@ -32,12 +32,12 @@ try {
       case "url":
         return retValue("URL");
       default:
-        if (Array.isArray(formatter)) {
+        if (Array.isArray(value.format)) {
           if (possiblyOptional) {
-            return [...formatter, "undefined"].map(v => `"${v}"`).join(" | ");
+            return mapValues([...value.format, "undefined"]);
           }
 
-          return formatter.map(v => `"${v}"`).join(" | ");
+          return mapValues(value.format);
         }
 
         return retValue("string");
@@ -68,4 +68,8 @@ export interface Config { ${entries.filter(v => !!v).join(" ")} }`;
   fs.writeFileSync(path.join(distDir, "config.d.ts"), Config);
 } catch (error) {
   // silently ignore error
+}
+
+function mapValues(values) {
+  return values.map(v => `"${v}"`).join(" | ");
 }

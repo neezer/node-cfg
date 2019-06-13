@@ -9,9 +9,7 @@
     "dotenv": "^6.2.0",
     "toml": "^2.3.3"
   },
-  "bin": {
-    "cfg-extrude": "./bin/cfg-extrude.js"
-  },
+  "bin": "./bin/cfg.js",
   "files": [
     "bin",
     "dist",
@@ -38,7 +36,7 @@
     "clean": "rimraf dist",
     "test": "tape --require ts-node/register 'test/**/*.test.ts'",
     "prepublishOnly": "yarn build",
-    "postinstall": "bin/cfg-extrude.js $INIT_CWD"
+    "postinstall": "bin/cfg.js $INIT_CWD"
   },
   "commitlint": {
     "extends": [
