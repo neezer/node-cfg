@@ -5,23 +5,14 @@
         "arg": "env",
         "desc": "The environment to start the app in.",
         "env": "NODE_ENV",
-        "format": [
-          "development",
-          "production",
-          "test"
-        ]
+        "format": ["development", "production", "test"]
       }
     },
     "logLevel": {
       "arg": "log",
       "desc": "Log level",
       "env": "LOG_LEVEL",
-      "format": [
-        "debug",
-        "info",
-        "warn",
-        "error"
-      ]
+      "format": ["debug", "info", "warn", "error"]
     }
   }
 }

@@ -4,10 +4,6 @@
     "optional": true,
     "desc": "The environment to start the app in.",
     "env": "NODE_ENV",
-    "format": [
-      "development",
-      "production",
-      "test"
-    ]
+    "format": ["development", "production", "test"]
   }
 }
