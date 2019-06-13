@@ -11,7 +11,7 @@ let debug = () => {
 };
 
 try {
-  debug = require("debug")("@neezer/cfg");
+  debug = require("debug")("cfg");
 } catch (_) {
   // nothing
 }

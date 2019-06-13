@@ -10,7 +10,7 @@ import { Schema } from "./schema";
 import { validate } from "./validate";
 import { Errors, RawConfig, SchemaMap, Warnings } from "./values";
 
-const debug = makeDebug("@neezer/cfg");
+const debug = makeDebug("cfg");
 
 type IntermediateResult = [Errors, Warnings, RawConfig];
 type Reducer = (memo: IntermediateResult, p: string) => IntermediateResult;
