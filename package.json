@@ -16,12 +16,15 @@
     "package.json"
   ],
   "devDependencies": {
+    "@commitlint/cli": "^8.0.0",
     "@commitlint/config-conventional": "^7.5.0",
     "@types/dotenv": "^6.1.0",
     "@types/fs-extra": "^5.0.4",
     "@types/node": "^10.12.14",
     "@types/tape": "^4.2.32",
     "fs-extra": "^7.0.1",
+    "husky": "^2.4.1",
+    "lint-staged": "^8.2.0",
     "prettier": "^1.15.3",
     "rimraf": "^2.6.2",
     "semantic-release": "^15.13.1",
@@ -34,6 +37,7 @@
   "scripts": {
     "build": "yarn clean && tsc",
     "clean": "rimraf dist",
+    "lint": "tslint -p .",
     "test": "tape --require ts-node/register 'test/**/*.test.ts'",
     "prepublishOnly": "yarn build",
     "postinstall": "bin/cfg.js $INIT_CWD"
@@ -41,6 +45,24 @@
   "commitlint": {
     "extends": [
       "@commitlint/config-conventional"
+    ]
+  },
+  "husky": {
+    "hooks": {
+      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS",
+      "pre-commit": "lint-staged",
+      "pre-push": "yarn lint && yarn test"
+    }
+  },
+  "lint-staged": {
+    "**/*.json": [
+      "prettier --write",
+      "git add"
+    ],
+    "**/*.ts": [
+      "prettier --write",
+      "tslint -p .",
+      "git add"
     ]
   }
 }
