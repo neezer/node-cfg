@@ -1,18 +1,24 @@
 #!/usr/bin/env node
 
-// TODO convert to TS and export to bin
-// TODO maybe do better error handling?
-
 const fs = require("fs");
 const path = require("path");
 const distDir = path.join(__dirname, "../dist");
 const requireDist = p => require(path.join(distDir, p));
 const parentDir = process.argv[2];
 
+let debug = () => {
+  // nothing
+};
+
+try {
+  debug = require("debug")("@neezer/cfg");
+} catch (_) {
+  // nothing
+}
+
 try {
   const { load: loadFromPackage } = requireDist("./load/package-json");
   const { load: loadFromConfig } = requireDist("./load/config-json");
-
   const schemaMap = loadFromConfig(parentDir, loadFromPackage(parentDir));
 
   const isCfgEntry = obj =>
@@ -66,8 +72,9 @@ try {
 export interface Config { ${entries.filter(v => !!v).join(" ")} }`;
 
   fs.writeFileSync(path.join(distDir, "config.d.ts"), Config);
+  debug("config.d.ts written");
 } catch (error) {
-  // silently ignore error
+  debug(error);
 }
 
 function mapValues(values) {

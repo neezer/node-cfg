@@ -1,3 +1,4 @@
+import makeDebug from "debug";
 import dotenv from "dotenv";
 import fs from "fs";
 import path from "path";
@@ -5,9 +6,11 @@ import toml from "toml";
 import * as keypaths from "./keypaths";
 import { load as loadFromConfig } from "./load/config-json";
 import { load as loadFromPackage } from "./load/package-json";
-import { ISchema } from "./schema";
+import { Schema } from "./schema";
 import { validate } from "./validate";
 import { Errors, RawConfig, SchemaMap, Warnings } from "./values";
+
+const debug = makeDebug("@neezer/cfg");
 
 type IntermediateResult = [Errors, Warnings, RawConfig];
 type Reducer = (memo: IntermediateResult, p: string) => IntermediateResult;
@@ -29,12 +32,16 @@ export function cfg<T = RawConfig>(props: IProps = {}): T {
   let schemaMap: SchemaMap | undefined = {};
 
   if (givenSchema === undefined) {
+    debug("no schema provided");
+    debug("reading schema from package.json");
     schemaMap = loadFromPackage();
 
     if (fs.existsSync(configJsonPath)) {
+      debug("reading schema from config.json");
       schemaMap = loadFromConfig(process.cwd(), schemaMap || {});
     }
   } else {
+    debug("schema provided");
     schemaMap = givenSchema;
   }
 
@@ -42,6 +49,7 @@ export function cfg<T = RawConfig>(props: IProps = {}): T {
     throw new Error("schema is unknown");
   }
 
+  debug("reading environment variables");
   dotenv.config();
 
   const paths = keypaths.collect(schemaMap);
@@ -53,7 +61,7 @@ export function cfg<T = RawConfig>(props: IProps = {}): T {
     const envValue = envMap[p];
     const value = configValue === undefined ? envValue : configValue;
     const updated = keypaths.set(p, value, conf);
-    const schema = keypaths.get(p, schemaMap) as ISchema;
+    const schema = keypaths.get(p, schemaMap) as Schema;
 
     const [newErrs, newWarns, coercedValue] = validate(
       updated,
@@ -70,10 +78,12 @@ export function cfg<T = RawConfig>(props: IProps = {}): T {
   const [errors, warnings, config] = paths.reduce(reducer, [[], [], {}]);
 
   if (errors.length > 0) {
+    debug("has errors");
     onError(errors);
   }
 
   if (warnings.length > 0) {
+    debug("has warnings");
     onWarning(warnings);
   }
 
@@ -100,12 +110,15 @@ function buildXDGConfigMap(schemaMap: SchemaMap, paths: string[]): RawConfig {
     let dirPath = null;
 
     if (XDG_CONFIG_HOME !== undefined) {
+      debug("using XDG_CONFIG_HOME");
       dirPath = path.join(XDG_CONFIG_HOME, appName);
     } else if (HOME !== undefined) {
+      debug("using HOME/.config");
       dirPath = path.join(HOME, ".config", appName);
     }
 
     if (dirPath === null) {
+      debug("no XDG config found; skipping");
       return {};
     }
 
@@ -121,7 +134,7 @@ function buildXDGConfigMap(schemaMap: SchemaMap, paths: string[]): RawConfig {
         return { ...memo, [p]: value };
       }, {});
     } catch (error) {
-      // do nothing
+      debug(error);
     }
   }
 

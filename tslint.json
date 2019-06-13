@@ -1,7 +1,8 @@
 {
   "extends": ["tslint:latest", "tslint-config-prettier"],
   "rules": {
-    "no-implicit-dependencies": [true, "dev"]
+    "no-implicit-dependencies": [true, "dev"],
+    "interface-name": false
   },
   "linterOptions": {
     "exclude": ["**/*.json"]

@@ -1,6 +1,6 @@
-import { ISchema } from "./schema";
+import { Schema } from "./schema";
 
-export type SchemaMap = Record<string, string | ISchema | object>;
+export type SchemaMap = Record<string, string | Schema | object>;
 export type RawConfig = Record<string, any>;
 export type Errors = string[];
 export type Warnings = string[];

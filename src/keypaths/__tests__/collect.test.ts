@@ -1,7 +1,7 @@
 import { collect } from "..";
-import { ISchema } from "../../schema";
+import { Schema } from "../../schema";
 
-const schema: ISchema = {
+const schema: Schema = {
   desc: "whatever",
   env: "whatever",
   format: "string"

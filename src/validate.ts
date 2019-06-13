@@ -1,6 +1,6 @@
 import * as assert from "./assert";
 import * as keypaths from "./keypaths";
-import { ISchema } from "./schema";
+import { Schema } from "./schema";
 import { Errors, RawConfig, Warnings } from "./values";
 
 type CoercedValue = any;
@@ -9,7 +9,7 @@ export function validate(
   config: RawConfig,
   keyPath: string,
   value: any,
-  schema: ISchema
+  schema: Schema
 ): [Errors, Warnings, CoercedValue] {
   const { format, optional, requiredWhen, caseInsensitive } = schema;
   const errors: Errors = [];

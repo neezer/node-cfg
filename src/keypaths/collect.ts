@@ -1,10 +1,10 @@
-import { ISchema, schemaCheck } from "../schema";
+import { Schema, schemaCheck } from "../schema";
 
 const objCheck = (o: any): o is Record<string, any> =>
   !!o && typeof o === "object" && !Array.isArray(o);
 
 export function collect(
-  obj: Record<string, unknown> | ISchema,
+  obj: Record<string, unknown> | Schema,
   prefix: string | null = null
 ): string[] {
   const prefixFn = (k: string) => [prefix, k].filter(v => !!v).join(".");

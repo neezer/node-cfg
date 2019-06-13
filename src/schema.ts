@@ -1,6 +1,6 @@
 export type Format = string[] | string;
 
-export interface ISchema {
+export interface Schema {
   $appName?: string;
   env: string;
   desc: string;
@@ -11,7 +11,7 @@ export interface ISchema {
   [key: string]: string | boolean | Format | undefined;
 }
 
-export const schemaCheck = (s: any): s is ISchema =>
+export const schemaCheck = (s: any): s is Schema =>
   !!s &&
   typeof s === "object" &&
   !Array.isArray(s) &&
