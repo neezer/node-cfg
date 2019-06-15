@@ -24,29 +24,21 @@ try {
   const isCfgEntry = obj =>
     !!obj && "desc" in obj && "env" in obj && "format" in obj;
 
-  const getType = value => {
-    const { optional, requiredWhen } = value;
-    const possiblyOptional = optional === true || requiredWhen !== undefined;
-    const retValue = type => (possiblyOptional ? `${type} | undefined` : type);
-
-    switch (value.format) {
+  const getType = format => {
+    switch (format) {
       case "number":
       case "port":
-        return retValue("number");
+        return "number";
       case "boolean":
-        return retValue("boolean");
+        return "boolean";
       case "url":
-        return retValue("URL");
+        return "URL";
       default:
-        if (Array.isArray(value.format)) {
-          if (possiblyOptional) {
-            return mapValues([...value.format, "undefined"]);
-          }
-
-          return mapValues(value.format);
+        if (Array.isArray(format)) {
+          return mapValues(format);
         }
 
-        return retValue("string");
+        return "string";
     }
   };
 
@@ -54,12 +46,15 @@ try {
     keys.map(key => {
       const value = coll[key];
 
+      const possiblyOptional =
+        value.optional === true || value.requiredWhen !== undefined;
+
       if (key === "$appName") {
         return undefined;
       }
 
       if (isCfgEntry(value)) {
-        return `${key}: ${getType(value)};`;
+        return `${key}${possiblyOptional ? "?" : ""}: ${getType(value)};`;
       }
 
       return `${key}: { ${findEntries(Object.keys(value), value).join(" ")} };`;
