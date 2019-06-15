@@ -54,7 +54,9 @@ try {
       }
 
       if (isCfgEntry(value)) {
-        return `${key}${possiblyOptional ? "?" : ""}: ${getType(value)};`;
+        return `${key}${possiblyOptional ? "?" : ""}: ${getType(
+          value.format
+        )};`;
       }
 
       return `${key}: { ${findEntries(Object.keys(value), value).join(" ")} };`;
