@@ -52,6 +52,102 @@ However, be advised that if you do not properly handle errors, the resulting
 config object may be in a bad state. I like failing hard when this happens to
 prevent more cryptic errors, which is why the default is so aggressive.
 
+## Example `config.json`
+
+```json
+{
+  "boolean": {
+    "desc": "A value that will be evaluated to `true` or `false`",
+    "env": "BOOL",
+    "format": "boolean"
+  },
+  "number": {
+    "desc": "A value that will be evaluated as a Number",
+    "env": "NUMBER",
+    "format": "number"
+  },
+  "path": {
+    "desc": "A value representing a file path. cfg will check that a file exists at the path given, and throw an error if it doesn't. The return value is the given string.",
+    "env": "PATH",
+    "format": "path"
+  },
+  "port": {
+    "desc": "A value that will be returned as a number. It must be greater than or equal to 0 and less than or equal to 65535, and it must be an integer.",
+    "env": "PORT",
+    "format": "port"
+  },
+  "url": {
+    "desc": "A value that will be evaluated as a WHATWG URL object, which will be the return value.",
+    "env": "URL",
+    "format": "url"
+  },
+  "inclusion": {
+    "desc": "A value that will be tested for equality against the values provided to `format`.",
+    "env": "INCLUSION",
+    "format": ["one", "two", "three"]
+  },
+  "any": {
+    "desc": "A value that does not specify `format` in one of the above cases will be evaluated as a string.",
+    "env": "ANY",
+    "format": "whatever"
+  }
+}
+```
+
+The following properties are optional on any config entity:
+
+| property        | description                                                                                                                                       |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| caseInsensitive | will downcase the input before doing any validation                                                                                               |
+| optional        | will not emit an error if the value fails `format` validation                                                                                     |
+| requiredWhen    | will mark this value as required when the value for this property is evaluated to `true`. Note that the target value must be `format: "boolean"`. |
+
+### requiredWhen Example
+
+```json
+{
+  "check-me": {
+    "desc": "the check value",
+    "env": "A",
+    "format": "boolean"
+  },
+  "b": {
+    "desc": "the b value",
+    "env": "B",
+    "format": "string",
+    "requiredWhen": "check-me"
+  }
+}
+```
+
+```ts
+/**
+ * process.env.A === 1
+ * process.env.B === 'bananas'
+ */
+const config = cfg();
+
+config["check-me"] === true;
+config.b === "bananas";
+
+/**
+ * process.env.A === 0
+ */
+const config = cfg();
+
+config["check-me"] === false;
+config.b === undefined;
+
+/**
+ * process.env.A === 1
+ */
+const config = cfg();
+
+// will exit and emit the error
+//
+//     value at "b" cannot be undefined
+```
+
 ## Migrating from 2.x.x to 3.x.x
 
 ### Automagic Config Type Definition
