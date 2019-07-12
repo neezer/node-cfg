@@ -74,5 +74,9 @@
       "tslint -p .",
       "git add"
     ]
+  },
+  "resolutions": {
+    "lodash": "4.17.13",
+    "marked": "0.6.1"
   }
 }
