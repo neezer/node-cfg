@@ -163,7 +163,7 @@ functionality in your editor if you use it.
 If you need to regenerate the definition, you can manually invoke the script:
 
 ```shell
-./node_modules/.bin/cfg-extrude
+./node_modules/.bin/cfg
 ```
 
 #### Why at package install time?
