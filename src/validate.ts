@@ -11,7 +11,13 @@ export function validate(
   value: any,
   schema: Schema
 ): [Errors, Warnings, CoercedValue] {
-  const { format, optional, requiredWhen, caseInsensitive } = schema;
+  const {
+    assembleFrom,
+    format,
+    optional,
+    requiredWhen,
+    caseInsensitive
+  } = schema;
   const errors: Errors = [];
   const warnings: Warnings = [];
 
@@ -37,7 +43,7 @@ export function validate(
   }
 
   if (isRequired && Array.isArray(format)) {
-    [err, val] = assert.in(keyPath, value, format, caseInsensitive);
+    [err, val] = assert.in(keyPath, value, format, { caseInsensitive });
   } else {
     switch (format) {
       case "boolean":
@@ -50,7 +56,7 @@ export function validate(
         [err, val] = assert.number(keyPath, value);
         break;
       case "url":
-        [err, val] = assert.url(keyPath, value);
+        [err, val] = assert.url(keyPath, value, format, { assembleFrom });
         break;
       case "path":
         [err, val] = assert.path(keyPath, value);

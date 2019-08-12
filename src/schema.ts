@@ -1,5 +1,16 @@
 export type Format = string[] | string;
 
+export interface AssembleFrom {
+  host: string;
+  protocol: string;
+  port?: string;
+  search?: string;
+  username?: string;
+  password?: string;
+  pathname?: string;
+  [key: string]: string | undefined;
+}
+
 export interface Schema {
   $appName?: string;
   env: string;
@@ -8,7 +19,8 @@ export interface Schema {
   format: Format;
   requiredWhen?: string;
   caseInsensitive?: boolean;
-  [key: string]: string | boolean | Format | undefined;
+  assembleFrom?: AssembleFrom;
+  [key: string]: string | boolean | Format | AssembleFrom | undefined;
 }
 
 export const schemaCheck = (s: any): s is Schema =>

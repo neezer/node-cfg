@@ -251,6 +251,87 @@ describe("format url", () => {
       });
     });
   });
+
+  test("bundles up URL parts to return a url", () => {
+    expect.assertions(1);
+
+    const PORT = "8000";
+    const HOST = "example.com";
+    const PROTOCOL = "http";
+    const PATH = "/bananas";
+    const USER = "voldemort";
+    const PASS = "nagini";
+    const QUERY = "dark-wizard=true";
+
+    const expectedUrl = new URL(
+      `http://voldemort:nagini@example.com:8000/bananas?dark-wizard=true`
+    );
+
+    withEnv({ PORT, HOST, PROTOCOL, PATH, USER, PASS, QUERY }, () => {
+      const config = cfg({
+        onError: errors => expect(errors).toEqual([]),
+        schema: fixtures.formatUrlFromParts
+      });
+
+      expect(config).toEqual(
+        expect.objectContaining({
+          url: expectedUrl
+        })
+      );
+    });
+  });
+
+  test("throws when critical parts are missing", () => {
+    expect.assertions(2);
+
+    const PROTOCOL = "http";
+    const HOST = "example.com";
+
+    withEnv({ HOST }, () => {
+      cfg({
+        onError: errors => {
+          expect(errors).toEqual([
+            '"url" cannot be cast to a URL; attempted to assemble from parts but the protocol is missing'
+          ]);
+        },
+        schema: fixtures.formatUrlFromParts
+      });
+    });
+
+    withEnv({ PROTOCOL }, () => {
+      cfg({
+        onError: errors => {
+          expect(errors).toEqual([
+            '"url" cannot be cast to a URL; attempted to assemble from parts but the host is missing'
+          ]);
+        },
+        schema: fixtures.formatUrlFromParts
+      });
+    });
+  });
+
+  test("omits non-critical parts", () => {
+    expect.assertions(1);
+
+    const HOST = "example.com";
+    const PROTOCOL = "http";
+    const PATH = "/bananas";
+    const USER = "voldemort";
+    const expectedUrl = new URL(`http://voldemort@example.com/bananas`);
+
+    withEnv({ HOST, PROTOCOL, PATH, USER }, () => {
+      const config = cfg({
+        onError: errors => expect(errors).toEqual([]),
+        schema: fixtures.formatUrlFromParts
+      });
+
+      expect(config).toEqual(
+        expect.objectContaining({
+          url: expectedUrl
+        })
+      );
+    });
+  });
 });
 
 describe("format port", () => {
