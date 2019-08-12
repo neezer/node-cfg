@@ -101,8 +101,9 @@ The following properties are optional on any config entity:
 | caseInsensitive | will downcase the input before doing any validation                                                                                               |
 | optional        | will not emit an error if the value fails `format` validation                                                                                     |
 | requiredWhen    | will mark this value as required when the value for this property is evaluated to `true`. Note that the target value must be `format: "boolean"`. |
+| assembleFrom    | only valid for URLs, provide a map to build a URL value by parts. See below                                                                       |
 
-### requiredWhen Example
+### `requiredWhen` Example
 
 ```json
 {
@@ -147,6 +148,45 @@ const config = cfg();
 //
 //     value at "b" cannot be undefined
 ```
+
+### `assembleFrom` Example
+
+**NOTE**: This only affects URL values when `format` is set to `url`.
+
+Sometimes you can't provide a connection string and have to build it up by
+parts, specified as individual environment variables. For those cases, you can
+provide the `assembleFrom` configuration option, which accepts a map like this:
+
+```json
+{
+  "url-in-parts": {
+    "desc": "a url in parts",
+    "env": "URL",
+    "format": "url",
+    "assembleFrom": {
+      "host": "URL_HOST",
+      "port": "URL_PORT",
+      "protocol": "URL_PROTO",
+      "username": "URL_USER",
+      "password": "URL_PASS",
+      "search": "URL_QUERY_PARAMS",
+      "pathname": "URL_PATH"
+    }
+  }
+}
+```
+
+`cfg` will check to see if the value provided at `URL` is valid, but if it is
+not and `assembleFrom` is present, it will attempt to build a URL from the parts
+specified in the map. The values in the map are the environment variables you
+want to use for each part of the URL: the keys are fixed.
+
+If successfull, the final result will be a URL as if you had provided a value
+for `URL`.
+
+**NOTE**: No verification is done on the environment variables listed in
+`assembleFrom` before they are passed to the URL constructor internally; they're
+all read in as simple strings.
 
 ## Migrating from 2.x.x to 3.x.x
 

@@ -1,16 +1,21 @@
-import { Format } from "../schema";
+import { AssembleFrom, Format } from "../schema";
 
 export { assert as boolean } from "./boolean";
 export { assert as in } from "./in";
 export { assert as number } from "./number";
+export { assert as path } from "./path";
 export { assert as port } from "./port";
 export { assert as present } from "./present";
 export { assert as url } from "./url";
-export { assert as path } from "./path";
+
+interface Optional {
+  assembleFrom?: AssembleFrom;
+  caseInsensitive?: boolean;
+}
 
 export type Assert = (
   keyPath: string,
   value: any,
   format?: Format,
-  caseInsensitive?: boolean
+  optional?: Optional
 ) => [string | null, any];
