@@ -1,7 +1,8 @@
+import * as fixtures from "./__fixtures__";
+
 import fs from "fs-extra";
 import path from "path";
 import { cfg } from "../cfg";
-import * as fixtures from "./__fixtures__";
 import { withEnv } from "./helper";
 
 test("simple config loads environment", () => {
@@ -252,7 +253,7 @@ describe("format url", () => {
     });
   });
 
-  test.only("bundles up URL parts to return a url", () => {
+  test("bundles up URL parts to return a url", () => {
     expect.assertions(1);
 
     const PORT = "8000";
