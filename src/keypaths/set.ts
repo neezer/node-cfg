@@ -15,15 +15,14 @@ export function set(path: string, value: any, obj: RawConfig) {
       return { ...memo, [key]: value };
     }
 
-    const v = memo[key];
-
-    if (v !== undefined) {
-      return { ...memo, [key]: coll.slice(1).reduce(reducer, v) };
-    } else if (i === 0) {
-      return { ...memo, [key]: coll.slice(1).reduce(reducer, {}) };
+    if (i > 0) {
+      return memo;
     }
 
-    return memo;
+    const v = memo[key];
+    const init = v === undefined ? {} : v;
+
+    return { ...memo, [key]: coll.slice(1).reduce(reducer, init) };
   };
 
   return parts.reduce(reducer, obj);

@@ -252,7 +252,7 @@ describe("format url", () => {
     });
   });
 
-  test("bundles up URL parts to return a url", () => {
+  test.only("bundles up URL parts to return a url", () => {
     expect.assertions(1);
 
     const PORT = "8000";
@@ -273,11 +273,7 @@ describe("format url", () => {
         schema: fixtures.formatUrlFromParts
       });
 
-      expect(config).toEqual(
-        expect.objectContaining({
-          url: expectedUrl
-        })
-      );
+      expect(config).toEqual({ url: expectedUrl });
     });
   });
 

@@ -41,3 +41,12 @@ test("works on empty objects", () => {
     })
   );
 });
+
+test("does not collide for similar key paths", () => {
+  const val1 = Object.create(null);
+  const val2 = Object.create(null);
+  const initialResult = set("b.c", val2, {});
+  const compoundResult = set("a.b.c", val1, initialResult);
+
+  expect(compoundResult).toEqual({ a: { b: { c: val1 } }, b: { c: val2 } });
+});
