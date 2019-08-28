@@ -33,6 +33,8 @@ try {
         return "boolean";
       case "url":
         return "URL";
+      case "path":
+        return "string | Buffer";
       default:
         if (Array.isArray(format)) {
           return mapValues(format);
