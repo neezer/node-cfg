@@ -31,7 +31,7 @@ try {
 	const testSchemaMap = loadFromConfig(
 		loadFromPackage(parentDir, true),
 		true,
-		schemaPath
+		testSchemaPath
 	);
 
 	const isCfgEntry = obj =>
