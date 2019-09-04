@@ -121,7 +121,7 @@ function cfg<T = RawConfig>(props: IProps = { testMode: false }) {
 }
 
 Object.defineProperty(cfg, "test", {
-  value: <T = RawConfig>(props: IProps = { testMode: true }) => {
+  value: <T = RawConfig>(props: IProps | undefined = { testMode: true }) => {
     const { schema: givenSchema, testMode, testConfigPath } = props;
     const packageSchema = loadFromPackage();
 
