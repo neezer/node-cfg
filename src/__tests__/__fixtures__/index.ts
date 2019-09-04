@@ -8,6 +8,7 @@ import formatUrl from "./format-url.json";
 import optionalSimple from "./optional-simple.json";
 import passingSimple from "./passing-simple.json";
 import requiredWhen from "./required-when.json";
+import testMode from "./test-mode.json";
 import xdg from "./xdg.json";
 
 export {
@@ -21,5 +22,6 @@ export {
   optionalSimple,
   requiredWhen,
   xdg,
-  passingSimple
+  passingSimple,
+  testMode
 };

@@ -1,0 +1,12 @@
+{
+  "port": {
+    "desc": "A port test.",
+    "env": "PORT",
+    "format": "port"
+  },
+  "host": {
+    "desc": "A host test",
+    "env": "HOST",
+    "format": "string"
+  }
+}

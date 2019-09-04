@@ -1,0 +1,7 @@
+{
+  "testProp": {
+    "desc": "A test value",
+    "env": "TEST_VALUE",
+    "format": "string"
+  }
+}

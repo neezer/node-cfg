@@ -188,6 +188,26 @@ for `URL`.
 `assembleFrom` before they are passed to the URL constructor internally; they're
 all read in as simple strings.
 
+## Test Mode (allowing partial configs)
+
+Sometimes you want to use `cfg` with an incomplete configuration. In order for
+`cfg` to not throw errors about missing configuration, you'll need to use it in
+test mode. You can do this by invoking it like this:
+
+```js
+cfg.test(/* same options */)
+```
+
+This changes the behavior of `cfg` to throw errors ***when properties are accessed***
+and not when the ***configuration is parsed***. Basically it makes `cfg` lazy
+instead of eager.
+
+`cfg.test` will also look for an alternate configuration in `config.test.json`
+or in `configTest` in `package.json`, and will merge in with the primary
+configuration schema. This allows you to define variables that only exist in
+test environments seemlessly without polluting the production configuration
+schema.
+
 ## Migrating from 2.x.x to 3.x.x
 
 ### Automagic Config Type Definition

@@ -7,41 +7,56 @@ import * as keypaths from "./keypaths";
 import { load as loadFromConfig } from "./load/config-json";
 import { load as loadFromPackage } from "./load/package-json";
 import { Schema } from "./schema";
+import { extend } from "./utils";
 import { validate } from "./validate";
 import { Errors, RawConfig, SchemaMap, Warnings } from "./values";
 
 const debug = makeDebug("cfg");
 
-type IntermediateResult = [Errors, Warnings, RawConfig];
+type ErrorMap = Record<string, string[]>;
+type IntermediateResult = [Errors, Warnings, RawConfig, ErrorMap];
 type Reducer = (memo: IntermediateResult, p: string) => IntermediateResult;
+type CFGFn<T = RawConfig> = (props: IProps) => T;
+type CFG = CFGFn & { test: CFGFn };
 
 interface IProps {
   schema?: SchemaMap;
   onError?: (errors: Errors) => void;
   onWarning?: (warnings: Warnings) => void;
+  testMode?: boolean;
+  configPath?: string;
+  testConfigPath?: string;
 }
 
-export function cfg<T = RawConfig>(props: IProps = {}): T {
+function cfg<T = RawConfig>(props: IProps = { testMode: false }) {
   const {
     schema: givenSchema,
     onError = defaultErrorHandler,
-    onWarning = defaultWarningHandler
+    onWarning = defaultWarningHandler,
+    testMode,
+    configPath
   } = props;
-  const configJsonPath = path.join(process.cwd(), "config.json");
+
+  const configJsonPath = configPath || path.join(process.cwd(), "config.json");
+
+  const packageSchema = loadFromPackage();
+
+  const fileSchema = fs.existsSync(configJsonPath)
+    ? loadFromConfig(configJsonPath, packageSchema || {})
+    : {};
 
   let schemaMap: SchemaMap | undefined = {};
 
-  if (givenSchema === undefined) {
+  if (!testMode && givenSchema === undefined) {
     debug("no schema provided");
     debug("reading schema from package.json");
-    schemaMap = loadFromPackage();
 
-    if (fs.existsSync(configJsonPath)) {
-      debug("reading schema from config.json");
-      schemaMap = loadFromConfig(process.cwd(), schemaMap || {});
-    }
+    schemaMap = fileSchema;
+  } else if (testMode) {
+    schemaMap = extend(fileSchema, givenSchema);
   } else {
     debug("schema provided");
+
     schemaMap = givenSchema;
   }
 
@@ -50,13 +65,14 @@ export function cfg<T = RawConfig>(props: IProps = {}): T {
   }
 
   debug("reading environment variables");
+
   dotenv.config();
 
   const paths = keypaths.collect(schemaMap);
   const xdgConfigMap = buildXDGConfigMap(schemaMap, paths);
   const envMap = buildEnvMap(schemaMap, paths);
 
-  const reducer: Reducer = ([errs, warns, conf], p) => {
+  const reducer: Reducer = ([errs, warns, conf, errMap], p) => {
     const configValue = xdgConfigMap[p];
     const envValue = envMap[p];
     const value = configValue === undefined ? envValue : configValue;
@@ -71,24 +87,86 @@ export function cfg<T = RawConfig>(props: IProps = {}): T {
     );
 
     const validated = keypaths.set(p, coercedValue, conf);
+    const hasErrors = newErrs.length > 0;
+    const errEntry = { [p]: newErrs };
 
-    return [errs.concat(newErrs), warns.concat(newWarns), validated];
+    return [
+      errs.concat(newErrs),
+      warns.concat(newWarns),
+      validated,
+      hasErrors ? { ...errMap, ...errEntry } : errMap
+    ];
   };
 
-  const [errors, warnings, config] = paths.reduce(reducer, [[], [], {}]);
+  const [errors, warnings, config, errorMap] = paths.reduce(reducer, [
+    [],
+    [],
+    {},
+    {}
+  ]);
+
+  if (testMode) {
+    return new Proxy(config, {
+      get: (obj, prop: string) => {
+        const keysWithErrors = Object.keys(errorMap);
+
+        if (keysWithErrors.includes(prop)) {
+          throw new Error(errorMap[prop][0]);
+        }
+
+        return obj[prop];
+      }
+    }) as T;
+  }
 
   if (errors.length > 0) {
     debug("has errors");
+
     onError(errors);
   }
 
   if (warnings.length > 0) {
     debug("has warnings");
+
     onWarning(warnings);
   }
 
   return config as T;
 }
+
+Object.defineProperty(cfg, "test", {
+  value: <T = RawConfig>(props: IProps = { testMode: true }) => {
+    const { schema: givenSchema, testConfigPath } = props;
+
+    const configJsonPath =
+      testConfigPath || path.join(process.cwd(), "config.test.json");
+
+    let schemaMap: SchemaMap | undefined = {};
+
+    if (givenSchema === undefined) {
+      debug("no schema provided");
+      debug("reading schema from package.json");
+
+      schemaMap = loadFromPackage(process.cwd(), true);
+
+      if (fs.existsSync(configJsonPath)) {
+        debug(`reading schema from ${configJsonPath}`);
+
+        schemaMap = loadFromConfig(configJsonPath, schemaMap || {});
+      }
+    } else {
+      debug("schema provided");
+
+      schemaMap = givenSchema;
+    }
+
+    return cfg<T>({ ...props, schema: schemaMap, testMode: true });
+  }
+});
+
+const typedCfg = cfg as CFG;
+
+export { typedCfg as cfg };
 
 function buildEnvMap(schemaMap: SchemaMap, paths: string[]): RawConfig {
   return paths.reduce((memo, p) => {
@@ -111,14 +189,17 @@ function buildXDGConfigMap(schemaMap: SchemaMap, paths: string[]): RawConfig {
 
     if (XDG_CONFIG_HOME !== undefined) {
       debug("using XDG_CONFIG_HOME");
+
       dirPath = path.join(XDG_CONFIG_HOME, appName);
     } else if (HOME !== undefined) {
       debug("using HOME/.config");
+
       dirPath = path.join(HOME, ".config", appName);
     }
 
     if (dirPath === null) {
       debug("no XDG config found; skipping");
+
       return {};
     }
 

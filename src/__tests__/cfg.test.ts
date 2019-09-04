@@ -1,9 +1,8 @@
-import * as fixtures from "./__fixtures__";
-
 import fs from "fs-extra";
 import path from "path";
 import { cfg } from "../cfg";
 import { withEnv } from "./helper";
+import * as fixtures from "./__fixtures__";
 
 test("simple config loads environment", () => {
   withEnv({ NODE_ENV: "test" }, () => {
@@ -189,7 +188,9 @@ describe("requiredWhen", () => {
       });
 
       expect(config).toEqual(
-        expect.objectContaining({ tls: { use: false, certPath: undefined } })
+        expect.objectContaining({
+          tls: { use: false, certPath: undefined }
+        })
       );
     });
   });
@@ -417,7 +418,10 @@ key = "testing"
       });
 
       expect(config).toEqual(
-        expect.objectContaining({ port: 8888, nested: { key: "testing" } })
+        expect.objectContaining({
+          nested: { key: "testing" },
+          port: 8888
+        })
       );
 
       return () => {
@@ -484,3 +488,41 @@ key = "testing"
 
 //   t.end();
 // });
+
+test("loads in testing mode", () => {
+  withEnv({ PORT: "1234" }, () => {
+    const config = cfg.test({
+      onError: errors => expect(errors).toEqual([]),
+      schema: fixtures.testMode
+    });
+
+    expect(config.port).toBe(1234);
+
+    expect(() => {
+      // tslint:disable-next-line:no-unused-expression
+      config.host;
+    }).toThrow(`value at "host" cannot be undefined`);
+  });
+});
+
+test("merges test config with live config", () => {
+  withEnv({ PORT: "1234", TEST_VALUE: "thingy" }, () => {
+    const config = cfg.test({
+      configPath: path.join(__dirname, "__fixtures__", "test-mode.json"),
+      onError: errors => expect(errors).toEqual([]),
+      testConfigPath: path.join(
+        __dirname,
+        "__fixtures__",
+        "test-mode.test.json"
+      )
+    });
+
+    expect(config.port).toBe(1234);
+    expect(config.testProp).toBe("thingy");
+
+    expect(() => {
+      // tslint:disable-next-line:no-unused-expression
+      config.host;
+    }).toThrow(`value at "host" cannot be undefined`);
+  });
+});
