@@ -6,8 +6,8 @@ import toml from "toml";
 import * as keypaths from "./keypaths";
 import { load as loadFromConfig } from "./load/config-json";
 import { load as loadFromPackage } from "./load/package-json";
+import { resolveSchema } from "./load/resolve-schema";
 import { Schema } from "./schema";
-import { extend } from "./utils";
 import { validate } from "./validate";
 import { Errors, RawConfig, SchemaMap, Warnings } from "./values";
 
@@ -37,28 +37,14 @@ function cfg<T = RawConfig>(props: IProps = { testMode: false }) {
     configPath
   } = props;
 
-  const configJsonPath = configPath || path.join(process.cwd(), "config.json");
-
   const packageSchema = loadFromPackage();
+  const fileSchema = loadFromConfig(packageSchema || {}, false, configPath);
 
-  const fileSchema = fs.existsSync(configJsonPath)
-    ? loadFromConfig(configJsonPath, packageSchema || {})
-    : {};
-
-  let schemaMap: SchemaMap | undefined = {};
-
-  if (!testMode && givenSchema === undefined) {
-    debug("no schema provided");
-    debug("reading schema from package.json");
-
-    schemaMap = fileSchema;
-  } else if (testMode) {
-    schemaMap = extend(fileSchema, givenSchema);
-  } else {
-    debug("schema provided");
-
-    schemaMap = givenSchema;
-  }
+  const schemaMap: SchemaMap | undefined = resolveSchema({
+    fileSchema,
+    givenSchema,
+    testMode
+  });
 
   if (schemaMap === undefined) {
     throw new Error("schema is unknown");
@@ -136,29 +122,20 @@ function cfg<T = RawConfig>(props: IProps = { testMode: false }) {
 
 Object.defineProperty(cfg, "test", {
   value: <T = RawConfig>(props: IProps = { testMode: true }) => {
-    const { schema: givenSchema, testConfigPath } = props;
+    const { schema: givenSchema, testMode, testConfigPath } = props;
+    const packageSchema = loadFromPackage();
 
-    const configJsonPath =
-      testConfigPath || path.join(process.cwd(), "config.test.json");
+    const fileSchema = loadFromConfig(
+      packageSchema || {},
+      true,
+      testConfigPath
+    );
 
-    let schemaMap: SchemaMap | undefined = {};
-
-    if (givenSchema === undefined) {
-      debug("no schema provided");
-      debug("reading schema from package.json");
-
-      schemaMap = loadFromPackage(process.cwd(), true);
-
-      if (fs.existsSync(configJsonPath)) {
-        debug(`reading schema from ${configJsonPath}`);
-
-        schemaMap = loadFromConfig(configJsonPath, schemaMap || {});
-      }
-    } else {
-      debug("schema provided");
-
-      schemaMap = givenSchema;
-    }
+    const schemaMap: SchemaMap | undefined = resolveSchema({
+      fileSchema,
+      givenSchema,
+      testMode
+    });
 
     return cfg<T>({ ...props, schema: schemaMap, testMode: true });
   }

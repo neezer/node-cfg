@@ -1,13 +1,22 @@
 import fs from "fs";
+import path from "path";
 import { extend } from "../utils";
 import { SchemaMap, schemaMapCheck } from "../values";
 
 export function load(
-  schemaPath: string,
-  existingSchemaMap: SchemaMap = {}
+  existingSchemaMap: SchemaMap = {},
+  testMode: boolean = false,
+  schemaPath?: string
 ): SchemaMap | undefined {
   try {
-    const rawSchema = fs.readFileSync(schemaPath, { encoding: "utf-8" });
+    const configJsonPath =
+      schemaPath ||
+      path.join(process.cwd(), testMode ? "config.test.json" : "config.json");
+
+    const rawSchema = fs.readFileSync(configJsonPath, {
+      encoding: "utf-8"
+    });
+
     const parsedSchema = JSON.parse(rawSchema);
 
     if (schemaMapCheck(parsedSchema)) {
