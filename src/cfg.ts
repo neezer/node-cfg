@@ -16,7 +16,7 @@ const debug = makeDebug("cfg");
 type ErrorMap = Record<string, string[]>;
 type IntermediateResult = [Errors, Warnings, RawConfig, ErrorMap];
 type Reducer = (memo: IntermediateResult, p: string) => IntermediateResult;
-type CFGFn<T = RawConfig> = (props: IProps) => T;
+type CFGFn = <T = RawConfig>(props: IProps) => T;
 type CFG = CFGFn & { test: CFGFn };
 
 interface IProps {
