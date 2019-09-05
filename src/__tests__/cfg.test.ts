@@ -279,6 +279,28 @@ describe("format url", () => {
     });
   });
 
+  test("bundles up URL parts to return a url in test mode", () => {
+    expect.assertions(1);
+
+    const PORT = "8000";
+    const HOST = "example.com";
+    const PROTOCOL = "http";
+    const PATH = "/bananas";
+    const USER = "voldemort";
+    const PASS = "nagini";
+    const QUERY = "dark-wizard=true";
+
+    const expectedUrl = new URL(
+      `http://voldemort:nagini@example.com:8000/bananas?dark-wizard=true`
+    );
+
+    withEnv({ PORT, HOST, PROTOCOL, PATH, USER, PASS, QUERY }, () => {
+      const config = cfg.test({ schema: fixtures.formatUrlFromPartsDeep });
+
+      expect(config.deep.url).toEqual(expectedUrl);
+    });
+  });
+
   test("throws when critical parts are missing", () => {
     expect.assertions(2);
 

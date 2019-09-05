@@ -102,11 +102,11 @@ function cfg<T = RawConfig>(props: IProps = { testMode: false }) {
         throw new Error(errorMap[prefixedProp][0]);
       }
 
-      const value = obj[prefixedProp];
+      const value = obj[prop];
 
-      return typeof value === "object"
-        ? new Proxy(obj[prefixedProp], { get: propGetter(prefixedProp) })
-        : value;
+      return isTerminalValue(value)
+        ? value
+        : new Proxy(value, { get: propGetter(prefixedProp) });
     };
 
     return new Proxy(config, { get: propGetter("") }) as T;
@@ -218,4 +218,14 @@ function defaultWarningHandler(warnings: Warnings) {
   warnings.forEach(warning => {
     process.stdout.write(`config warning: ${warning}\n`);
   });
+}
+
+function isTerminalValue(value: any) {
+  return (
+    typeof value === "boolean" ||
+    typeof value === "number" ||
+    typeof value === "string" ||
+    value instanceof URL ||
+    value instanceof Buffer
+  );
 }
