@@ -94,17 +94,22 @@ function cfg<T = RawConfig>(props: IProps = { testMode: false }) {
   ]);
 
   if (testMode) {
-    return new Proxy(config, {
-      get: (obj, prop: string) => {
-        const keysWithErrors = Object.keys(errorMap);
+    const propGetter = (prefix: string) => (obj: any, prop: string): any => {
+      const keysWithErrors = Object.keys(errorMap);
+      const prefixedProp = prefix === "" ? prop : `${prefix}.${prop}`;
 
-        if (keysWithErrors.includes(prop)) {
-          throw new Error(errorMap[prop][0]);
-        }
-
-        return obj[prop];
+      if (keysWithErrors.includes(prefixedProp)) {
+        throw new Error(errorMap[prefixedProp][0]);
       }
-    }) as T;
+
+      const value = obj[prefixedProp];
+
+      return typeof value === "object"
+        ? new Proxy(obj[prefixedProp], { get: propGetter(prefixedProp) })
+        : value;
+    };
+
+    return new Proxy(config, { get: propGetter("") }) as T;
   }
 
   if (errors.length > 0) {

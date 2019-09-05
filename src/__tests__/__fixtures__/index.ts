@@ -3,6 +3,7 @@ import formatBoolean from "./format-boolean.json";
 import formatNumber from "./format-number.json";
 import formatPath from "./format-path.json";
 import formatPort from "./format-port.json";
+import formatUrlFromPartsDeep from "./format-url-from-parts-deep.json";
 import formatUrlFromParts from "./format-url-from-parts.json";
 import formatUrl from "./format-url.json";
 import optionalSimple from "./optional-simple.json";
@@ -23,5 +24,6 @@ export {
   requiredWhen,
   xdg,
   passingSimple,
-  testMode
+  testMode,
+  formatUrlFromPartsDeep
 };

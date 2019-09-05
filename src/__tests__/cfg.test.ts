@@ -308,6 +308,64 @@ describe("format url", () => {
     });
   });
 
+  test("throws when critical parts are missing in test mode", () => {
+    expect.assertions(2);
+
+    const PROTOCOL = "http";
+    const HOST = "example.com";
+
+    withEnv({ HOST }, () => {
+      const config = cfg.test({ schema: fixtures.formatUrlFromParts });
+
+      expect(() => {
+        // tslint:disable-next-line:no-unused-expression
+        config.url;
+      }).toThrow(
+        '"url" cannot be cast to a URL; attempted to assemble from parts but the protocol is missing'
+      );
+    });
+
+    withEnv({ PROTOCOL }, () => {
+      const config = cfg.test({ schema: fixtures.formatUrlFromParts });
+
+      expect(() => {
+        // tslint:disable-next-line:no-unused-expression
+        config.url;
+      }).toThrow(
+        '"url" cannot be cast to a URL; attempted to assemble from parts but the host is missing'
+      );
+    });
+  });
+
+  test("throws when critical parts are missing in test mode with deeply nested properties", () => {
+    expect.assertions(2);
+
+    const PROTOCOL = "http";
+    const HOST = "example.com";
+
+    withEnv({ HOST }, () => {
+      const config = cfg.test({ schema: fixtures.formatUrlFromPartsDeep });
+
+      expect(() => {
+        // tslint:disable-next-line:no-unused-expression
+        config.deep.url;
+      }).toThrow(
+        '"deep.url" cannot be cast to a URL; attempted to assemble from parts but the protocol is missing'
+      );
+    });
+
+    withEnv({ PROTOCOL }, () => {
+      const config = cfg.test({ schema: fixtures.formatUrlFromPartsDeep });
+
+      expect(() => {
+        // tslint:disable-next-line:no-unused-expression
+        config.deep.url;
+      }).toThrow(
+        '"deep.url" cannot be cast to a URL; attempted to assemble from parts but the host is missing'
+      );
+    });
+  });
+
   test("omits non-critical parts", () => {
     expect.assertions(1);
 
@@ -458,36 +516,6 @@ key = "testing"
     });
   });
 });
-
-// test("loads config from XDG config if $appName is set", (t: Test) => {
-//   const tomlConf = `
-// port = 8888
-
-// [nested]
-// key = "testing"
-// `;
-
-//   withEnv({ XDG_CONFIG_HOME: "/tmp/.config" }, () => {
-//     const XDG_CONFIG_HOME = process.env.XDG_CONFIG_HOME as string;
-//     const pathToFile = path.join(XDG_CONFIG_HOME, xdg.$appName, "env.toml");
-
-//     fs.ensureFileSync(pathToFile);
-//     fs.writeFileSync(pathToFile, tomlConf, { encoding: "utf-8" });
-
-//     const config = cfg({
-//       onError: errors => t.fail(errors.join(" ")),
-//       schema: xdg
-//     });
-
-//     t.equal(config.port, 8888, "port is valid");
-
-//     return () => {
-//       fs.removeSync(path.join(XDG_CONFIG_HOME, ".config", xdg.$appName));
-//     };
-//   });
-
-//   t.end();
-// });
 
 test("loads in testing mode", () => {
   withEnv({ PORT: "1234" }, () => {

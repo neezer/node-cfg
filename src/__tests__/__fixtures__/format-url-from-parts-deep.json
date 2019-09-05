@@ -1,0 +1,18 @@
+{
+  "deep": {
+    "url": {
+      "desc": "A url test.",
+      "env": "URL",
+      "format": "url",
+      "assembleFrom": {
+        "host": "HOST",
+        "port": "PORT",
+        "protocol": "PROTOCOL",
+        "username": "USER",
+        "password": "PASS",
+        "search": "QUERY",
+        "pathname": "PATH"
+      }
+    }
+  }
+}
