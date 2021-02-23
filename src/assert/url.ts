@@ -2,6 +2,11 @@ import { URL } from "url";
 import { Assert } from ".";
 import { AssembleFrom } from "../schema";
 
+const getValue = (v: string | string[]) => (Array.isArray(v) ? v[1] : v);
+
+const isArray = (array: string | string[] | undefined): array is string[] =>
+  Array.isArray(array);
+
 export const assert: Assert = (keyPath, value, _, optional) => {
   try {
     const parsed = new URL(value);
@@ -23,11 +28,17 @@ export const assert: Assert = (keyPath, value, _, optional) => {
 
       const assemble: AssembleFrom = mapKeys.reduce(
         (memo, key) => {
-          const envKey = assembleMap[key];
+          let envKey: string | undefined = assembleMap[key];
+          let defaultValue;
+
+          if (isArray(envKey)) {
+            defaultValue = envKey[1];
+            envKey = envKey[0];
+          }
 
           return envKey === undefined
             ? memo
-            : { ...memo, [key]: process.env[envKey] };
+            : { ...memo, [key]: process.env[envKey] || defaultValue };
         },
         {
           host: "",

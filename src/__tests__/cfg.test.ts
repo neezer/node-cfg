@@ -1,4 +1,5 @@
 import fs from "fs-extra";
+import { URL } from "url";
 import path from "path";
 import { cfg } from "../cfg";
 import { withEnv } from "./helper";
@@ -259,7 +260,6 @@ describe("format url", () => {
 
     const PORT = "8000";
     const HOST = "example.com";
-    const PROTOCOL = "http";
     const PATH = "/bananas";
     const USER = "voldemort";
     const PASS = "nagini";
@@ -269,7 +269,7 @@ describe("format url", () => {
       `http://voldemort:nagini@example.com:8000/bananas?dark-wizard=true`
     );
 
-    withEnv({ PORT, HOST, PROTOCOL, PATH, USER, PASS, QUERY }, () => {
+    withEnv({ PORT, HOST, PATH, USER, PASS, QUERY }, () => {
       const config = cfg({
         onError: errors => expect(errors).toEqual([]),
         schema: fixtures.formatUrlFromParts
@@ -302,21 +302,10 @@ describe("format url", () => {
   });
 
   test("throws when critical parts are missing", () => {
-    expect.assertions(2);
+    expect.assertions(1);
 
     const PROTOCOL = "http";
     const HOST = "example.com";
-
-    withEnv({ HOST }, () => {
-      cfg({
-        onError: errors => {
-          expect(errors).toEqual([
-            '"url" cannot be cast to a URL; attempted to assemble from parts but the protocol is missing'
-          ]);
-        },
-        schema: fixtures.formatUrlFromParts
-      });
-    });
 
     withEnv({ PROTOCOL }, () => {
       cfg({
@@ -331,21 +320,10 @@ describe("format url", () => {
   });
 
   test("throws when critical parts are missing in test mode", () => {
-    expect.assertions(2);
+    expect.assertions(1);
 
     const PROTOCOL = "http";
     const HOST = "example.com";
-
-    withEnv({ HOST }, () => {
-      const config = cfg.test({ schema: fixtures.formatUrlFromParts });
-
-      expect(() => {
-        // tslint:disable-next-line:no-unused-expression
-        config.url;
-      }).toThrow(
-        '"url" cannot be cast to a URL; attempted to assemble from parts but the protocol is missing'
-      );
-    });
 
     withEnv({ PROTOCOL }, () => {
       const config = cfg.test({ schema: fixtures.formatUrlFromParts });

@@ -179,7 +179,9 @@ provide the `assembleFrom` configuration option, which accepts a map like this:
 `cfg` will check to see if the value provided at `URL` is valid, but if it is
 not and `assembleFrom` is present, it will attempt to build a URL from the parts
 specified in the map. The values in the map are the environment variables you
-want to use for each part of the URL: the keys are fixed.
+want to use for each part of the URL: the keys are fixed. You can also provide
+a tuple of values, where the first entry is the environment variable to source
+from, and the second value is the default value to use if no value was sourced.
 
 If successfull, the final result will be a URL as if you had provided a value
 for `URL`.

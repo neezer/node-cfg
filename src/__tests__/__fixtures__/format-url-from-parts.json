@@ -6,7 +6,7 @@
     "assembleFrom": {
       "host": "HOST",
       "port": "PORT",
-      "protocol": "PROTOCOL",
+      "protocol": ["PROTOCOL", "http"],
       "username": "USER",
       "password": "PASS",
       "search": "QUERY",
